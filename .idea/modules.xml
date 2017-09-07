@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/PixelBuilt-Quests.iml" filepath="$PROJECT_DIR$/PixelBuilt-Quests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/PixelBuilt-Quests_main.iml" filepath="$PROJECT_DIR$/.idea/modules/PixelBuilt-Quests_main.iml" group="PixelBuilt-Quests" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/PixelBuilt-Quests_test.iml" filepath="$PROJECT_DIR$/.idea/modules/PixelBuilt-Quests_test.iml" group="PixelBuilt-Quests" />
+    </modules>
+  </component>
+</project>
