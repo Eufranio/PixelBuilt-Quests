@@ -23,8 +23,8 @@ import java.util.Map;
  * Created by Frani on 05/09/2017.
  */
 
-@Plugin(name = "PixelBuilt Quests",
-        id = "pbquests",
+@Plugin(name = "PixelBuiltQuests",
+        id = "pixelbuilt-quests",
         authors = { "Eufranio" })
 public class PixelBuiltQuests {
 

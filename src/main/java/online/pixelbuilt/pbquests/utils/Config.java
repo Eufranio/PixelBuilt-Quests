@@ -12,6 +12,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.item.ItemType;
@@ -61,7 +62,7 @@ public class Config {
         // Loading data
         if(!dataFile.toFile().exists()) {
             try (OutputStream os = Files.newOutputStream(dataFile)) {
-                DataFormats.NBT.writeTo(os, DataContainer.createNew());
+                DataFormats.NBT.writeTo(os, new MemoryDataContainer());
             } catch (IOException e) { e.printStackTrace(); }
         }
 

@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'online.pixelbuilt.pbquests'
-version = '1.0'
+version = '1.2'
 description = 'Quests plugin made for the PixelBuilt server'
 mainClassName = 'online.pixelbuilt.pbquests.PixelBuiltQuests'
 compileJava.options.encoding = 'UTF-8'
