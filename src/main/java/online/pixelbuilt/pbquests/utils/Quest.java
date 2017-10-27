@@ -84,7 +84,7 @@ public class Quest {
         }
 
         // Player has the required progress level
-        if(PixelBuiltQuests.db.getProgress(player, questLine) >= progressRequired) {
+        if(PixelBuiltQuests.db.getProgress(player, questLine) == progressRequired) {
             int count = 0;
 
             // Take item from player
@@ -116,18 +116,22 @@ public class Quest {
                         })
                         .submit(PixelBuiltQuests.instance);
             }
-        } else {
+            return;
+
+        }
+
+        if (PixelBuiltQuests.db.getProgress(player, questLine) == (progressRequired - 1)) {
             // Tell the player that he don't have the required progress level
             player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(progressRequiredMessage.replace("%player%", player.getName())));
+        }
 
-            if (PixelBuiltQuests.runningQuests.containsKey(player)) {
-                PixelBuiltQuests.runningQuests.remove(player);
-            }
+        if (PixelBuiltQuests.runningQuests.containsKey(player)) {
+            PixelBuiltQuests.runningQuests.remove(player);
+        }
 
-            if (denyMovement) {
-                if (!PixelBuiltQuests.playersBusy.contains(player)) return;
-                PixelBuiltQuests.playersBusy.remove(player);
-            }
+        if (denyMovement) {
+            if (!PixelBuiltQuests.playersBusy.contains(player)) return;
+            PixelBuiltQuests.playersBusy.remove(player);
         }
     }
 

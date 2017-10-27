@@ -27,7 +27,7 @@ public class Database {
 
         try {
             db.getCollection("players");
-        } catch (IllegalArgumentException error) {
+        } catch (IllegalArgumentException | NullPointerException error) {
             db.createCollection("players");
         }
 
