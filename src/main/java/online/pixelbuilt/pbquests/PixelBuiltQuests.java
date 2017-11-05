@@ -1,6 +1,8 @@
 package online.pixelbuilt.pbquests;
 
 import com.google.inject.Inject;
+import online.pixelbuilt.pbquests.persistence.QuestDAO;
+import online.pixelbuilt.pbquests.persistence.QuestPersistenceService;
 import online.pixelbuilt.pbquests.utils.*;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -31,7 +33,6 @@ public class PixelBuiltQuests {
     public static Logger logger;
     public static PixelBuiltQuests instance = null;
     public static Config config;
-    public static Database db;
     public static List<Player> playersBusy;
     public static Map<Player, Quest> runningQuests;
 
@@ -58,7 +59,12 @@ public class PixelBuiltQuests {
         instance = this;
         config = new Config(this, configFile, configDir);
         config.load();
-        db = new Database();
+        QuestPersistenceService db = new QuestPersistenceService(new QuestDAO());
+        Sponge.getServiceManager().setProvider(this, QuestPersistenceService.class, db);
+
+        QuestService questService = new QuestService();
+        questService.initialize();
+
         Command.registerCommand();
         Sponge.getEventManager().registerListeners(this, new Listeners());
         Sponge.getEventManager().registerListeners(this, new ChatUtils());

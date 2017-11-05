@@ -1,6 +1,7 @@
 package online.pixelbuilt.pbquests.utils;
 
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.persistence.QuestPersistenceService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -14,9 +15,6 @@ import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
-import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.blockray.BlockRay;
@@ -61,8 +59,6 @@ public class Command {
 
                                     Living npc = (Living) hitOpt.get().getExtent()
                                             .createEntity(entity, hitOpt.get().getPosition());
-                                    SpawnCause cause = SpawnCause.builder().type(SpawnTypes.PLUGIN).build();
-
                                     npc.offer(Keys.PERSISTS, true);
                                     npc.offer(Keys.AI_ENABLED, false);
                                     npc.offer(Keys.CUSTOM_NAME_VISIBLE, true);
@@ -71,19 +67,35 @@ public class Command {
                                     npc.offer(Keys.INVULNERABILITY_TICKS, Integer.MAX_VALUE);
                                     npc.offer(Keys.HAS_GRAVITY, false);
 
-                                    hitOpt.get().getExtent().spawnEntity(npc, Cause.source(cause).build());
+                                    hitOpt.get().getExtent().spawnEntity(npc);
 
                                 } else if (action.equalsIgnoreCase("checkprogress")) {
                                     ChatUtils.waitForResponse((Player)src,"&a Type the Quest Line that you want to query", (player1, questLine) -> {
-                                        player1.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Progress of &e" + arg + ": " + PixelBuiltQuests.db.getProgress(Sponge.getServer().getPlayer(arg).get(), questLine)));
-                                    });
+                                        Player player = Sponge.getServer().getPlayer(arg).get();
+                                        Sponge.getServiceManager()
+                                                .provide(QuestPersistenceService.class)
+                                                .ifPresent(questPersistenceService ->
+                                                        questPersistenceService.getProgress(player.getUniqueId(), questLine, i -> {
+                                                            player1.sendMessage(
+                                                                    TextSerializers.FORMATTING_CODE
+                                                                            .deserialize("&a Progress of &e" + arg + ": " + i
+                                                                        ));
+                                                }));
+                                        });
                                 } else if (action.equalsIgnoreCase("setprogress")) {
                                     ChatUtils.waitForResponse((Player)src, "&a Type the Quest Line that you want to set the progress of the player", (player, questLine) -> {
                                         ChatUtils.waitForResponse((Player)src, "&aType the progress that you want to set for " + arg, (player1, progress) -> {
-                                            PixelBuiltQuests.db.setProgressLevel(Sponge.getServer().getPlayer(arg).get(), questLine, Integer.parseInt(progress));
-                                            player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully updated the progress level of &e" + arg + "&a to &e" + progress + "&a!"));
-                                        });
-                                    });
+                                            Sponge.getServiceManager()
+                                                    .provide(QuestPersistenceService.class)
+                                                    .ifPresent(questPersistenceService ->
+                                                            questPersistenceService.setProgressLevel(Sponge.getServer().getPlayer(arg).get(),
+                                                            questLine,
+                                                            Integer.parseInt(progress),
+                                                            () -> player.sendMessage(
+                                                                    TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully updated the progress level of &e" + arg + "&a to &e" + progress + "&a!")
+                                                            )));
+                                                    });
+                                            });
                                 }
 
                             }

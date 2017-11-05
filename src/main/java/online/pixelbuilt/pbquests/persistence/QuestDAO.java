@@ -1,4 +1,4 @@
-package online.pixelbuilt.pbquests.utils;
+package online.pixelbuilt.pbquests.persistence;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -13,15 +13,17 @@ import org.bson.Document;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 
+import java.util.UUID;
+
 /**
  * Created by Frani on 05/09/2017.
  */
-public class Database {
+public class QuestDAO implements IQuestDAO {
 
     public MongoClient client;
     public MongoDatabase db;
 
-    public Database() {
+    public QuestDAO() {
         this.client = new MongoClient(new MongoClientURI(PixelBuiltQuests.config.getString("database", "URL")));
         this.db = client.getDatabase(PixelBuiltQuests.config.getString("database", "database"));
 
@@ -33,8 +35,9 @@ public class Database {
 
     }
 
-    public int getProgress(Player p, String questLine) {
-        FindIterable<Document> doc = db.getCollection("players").find(Filters.eq("UUID", p.getUniqueId().toString()));
+    @Override
+    public int getProgress(UUID p, String questLine) {
+        FindIterable<Document> doc = db.getCollection("players").find(Filters.eq("UUID", p));
 
         for (Document document : doc) {
             return ((Document)document.get("quests")).getInteger(questLine);
@@ -43,6 +46,7 @@ public class Database {
         return 0;
     }
 
+    @Override
     public void setProgressLevel(Player p, String questLine, int progress) {
         if (db.getCollection("players").count(new BsonDocument("UUID", new BsonString(p.getUniqueId().toString()))) >= 1) {
             db.getCollection("players").updateOne(
@@ -57,6 +61,7 @@ public class Database {
         db.getCollection("players").insertOne(document);
     }
 
+    @Override
     public String getQuestLineFromNPC(Entity npc) {
         FindIterable<Document> doc = db.getCollection("npcs").find(
                 Filters.eq("UUID", npc.getUniqueId().toString())
@@ -69,6 +74,7 @@ public class Database {
         return null;
     }
 
+    @Override
     public int getQuestIdFromNPC(Entity npc) {
         FindIterable<Document> doc = db.getCollection("npcs").find(
                 Filters.eq("UUID", npc.getUniqueId().toString())
@@ -81,6 +87,8 @@ public class Database {
         return -1;
     }
 
+
+    @Override
     public void addNpc(String questLine, int questId, Entity npc) {
         if (db.getCollection("npcs").count(new BsonDocument("UUID", new BsonString(npc.getUniqueId().toString()))) >= 1) {
 
@@ -101,6 +109,7 @@ public class Database {
         db.getCollection("npcs").insertOne(document);
     }
 
+    @Override
     public void removeNpc(Entity npc) {
         db.getCollection("npcs").deleteOne(
                 Filters.eq("UUID", npc.getUniqueId().toString())
