@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.persistence.QuestPersistenceService;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
@@ -13,6 +14,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.jnlp.ServiceManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -73,89 +75,95 @@ public class Quest {
     }
 
     public void run() {
-        if (!PixelBuiltQuests.runningQuests.containsKey(player)) {
-            PixelBuiltQuests.runningQuests.put(player, this);
+        if (!PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) {
+            PixelBuiltQuests.runningQuests.put(player.getUniqueId(), this);
         }
 
         // Add player to the list of busy players
         if (denyMovement) {
-            if (PixelBuiltQuests.playersBusy.contains(player)) return;
-            PixelBuiltQuests.playersBusy.add(player);
+            if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) return;
+            PixelBuiltQuests.playersBusy.add(player.getUniqueId());
         }
 
         // Player has the required progress level
-        if(PixelBuiltQuests.db.getProgress(player, questLine) == progressRequired) {
-            int count = 0;
+        QuestPersistenceService service = Sponge.getServiceManager().provide(QuestPersistenceService.class).get();
 
-            // Take item from player
-            if(item != null) {
-                if (!player.getInventory().queryAny(ItemStack.builder().itemType(item).build()).poll(1).isPresent()) {
-                    player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&c You need a &e" + item.getName() + "&c to complete this Quest!"));
-                    if (PixelBuiltQuests.runningQuests.containsKey(player)) {
-                        PixelBuiltQuests.runningQuests.remove(player);
+
+        service.getProgress(player, questLine, i-> {
+            if (i == progressRequired) {
+                int count = 0;
+                if(item != null) {
+                    if (!player.getInventory().queryAny(ItemStack.builder().itemType(item).build()).poll(1).isPresent()) {
+                        player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&c You need a &e" + item.getName() + "&c to complete this Quest!"));
+                        if (PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) {
+                            PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
+                        }
+                        if (denyMovement) {
+                            if (!PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) return;
+                            PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
+                        }
+                        return;
                     }
-                    if (denyMovement) {
-                        if (!PixelBuiltQuests.playersBusy.contains(player)) return;
-                        PixelBuiltQuests.playersBusy.remove(player);
-                    }
-                    return;
                 }
+
+                // Send the Quest messages
+                for (String msg : messages) {
+                    count += timeBetweenMessages;
+                    int fcount = count;
+                    Task.builder()
+                            .delay(count, TimeUnit.SECONDS)
+                            .execute(() -> {
+                                player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(msg.replace("%player%", player.getName())));
+                                if (fcount == messages.size()) {
+                                    Task.builder().delay(timeBetweenMessages, TimeUnit.SECONDS).execute(() -> continueTask()).submit(PixelBuiltQuests.instance);
+                                }
+                            })
+                            .submit(PixelBuiltQuests.instance);
+                }
+                return;
+
+            } else if (i == -1) {
+                player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(progressRequiredMessage.replace("%player%", player.getName())));
             }
+        });
 
-            // Send the Quest messages
-            for (String msg : messages) {
-                count += timeBetweenMessages;
-                int fcount = count;
-                Task.builder()
-                        .delay(count, TimeUnit.SECONDS)
-                        .execute(() -> {
-                            player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(msg.replace("%player%", player.getName())));
-                            if (fcount == messages.size()) {
-                                Task.builder().delay(timeBetweenMessages, TimeUnit.SECONDS).execute(() -> continueTask()).submit(PixelBuiltQuests.instance);
-                            }
-                        })
-                        .submit(PixelBuiltQuests.instance);
-            }
-            return;
 
-        }
-
-        if (PixelBuiltQuests.db.getProgress(player, questLine) == (progressRequired - 1)) {
-            // Tell the player that he don't have the required progress level
-            player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(progressRequiredMessage.replace("%player%", player.getName())));
-        }
-
-        if (PixelBuiltQuests.runningQuests.containsKey(player)) {
-            PixelBuiltQuests.runningQuests.remove(player);
+        if (PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) {
+            PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
         }
 
         if (denyMovement) {
-            if (!PixelBuiltQuests.playersBusy.contains(player)) return;
-            PixelBuiltQuests.playersBusy.remove(player);
+            if (!PixelBuiltQuests.playersBusy.contains(player.getUniqueId()))
+                return;
+            PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
         }
     }
 
     public void continueTask() {
 
         // Increase the player's progress
-        PixelBuiltQuests.db.setProgressLevel(player, questLine, progressAfter);
+        QuestPersistenceService service = Sponge.getServiceManager().provide(QuestPersistenceService.class).get();
+        service.setProgressLevel(player, questLine, progressAfter, ()->{
 
-        // Execute the console commands
-        for (String command : commands) {
-            Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command.replace("%player%", player.getName()));
-        }
-
-        if (denyMovement) {
-            if (PixelBuiltQuests.playersBusy.contains(player)) {
-                PixelBuiltQuests.playersBusy.remove(player);
+            // Execute the console commands
+            for (String command : commands) {
+                Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command.replace("%player%", player.getName()));
             }
-        }
 
-        // Teleport the player
-        player.setLocation(teleportTo);
+            if (denyMovement) {
+                if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) {
+                    PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
+                }
+            }
 
-        if (PixelBuiltQuests.runningQuests.containsKey(player)) {
-            PixelBuiltQuests.runningQuests.remove(player);
-        }
+            // Teleport the player
+            player.setLocation(teleportTo);
+
+            if (PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) {
+                PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
+            }
+        });
+
+
     }
 }
