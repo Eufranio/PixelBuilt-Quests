@@ -16,10 +16,7 @@ import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Frani on 05/09/2017.
@@ -33,8 +30,8 @@ public class PixelBuiltQuests {
     public static Logger logger;
     public static PixelBuiltQuests instance = null;
     public static Config config;
-    public static List<Player> playersBusy;
-    public static Map<Player, Quest> runningQuests;
+    public static Set<UUID> playersBusy;
+    public static Map<UUID, Quest> runningQuests;
 
     @Inject
     @DefaultConfig(sharedRoot = false)
@@ -68,7 +65,7 @@ public class PixelBuiltQuests {
         Command.registerCommand();
         Sponge.getEventManager().registerListeners(this, new Listeners());
         Sponge.getEventManager().registerListeners(this, new ChatUtils());
-        playersBusy = new ArrayList<>();
+        playersBusy = new HashSet<>();
         runningQuests = new HashMap<>();
     }
 

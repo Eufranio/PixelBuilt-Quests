@@ -16,16 +16,22 @@ import java.util.UUID;
 public class BlockLocation {
 
     public static final TypeToken<BlockLocation> type = TypeToken.of(BlockLocation.class);
+
     @Setting
     public int x;
+
     @Setting
     public int y;
+
     @Setting
     public int z;
+
     @Setting
     public UUID world;
+
     @Setting
     public String questLine;
+
     @Setting
     public int questId;
 
