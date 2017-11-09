@@ -14,7 +14,6 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.jnlp.ServiceManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +53,7 @@ public class Quest {
             );
 
             if (teleportTo == null) {
-                PixelBuiltQuests.logger.error("The name "+n.getNode("teleportTo", "world").getString()+" isn't a valid world!");
+                PixelBuiltQuests.logger.error("The name " + n.getNode("teleportTo", "world").getString() + " isn't a valid world!");
                 return;
             }
 
@@ -89,10 +88,10 @@ public class Quest {
         QuestPersistenceService service = Sponge.getServiceManager().provide(QuestPersistenceService.class).get();
 
 
-        service.getProgress(player, questLine, i-> {
+        service.getProgress(player, questLine, i -> {
             if (i == progressRequired) {
                 int count = 0;
-                if(item != null) {
+                if (item != null) {
                     if (!player.getInventory().queryAny(ItemStack.builder().itemType(item).build()).poll(1).isPresent()) {
                         player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&c You need a &e" + item.getName() + "&c to complete this Quest!"));
                         if (PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) {
@@ -143,7 +142,7 @@ public class Quest {
 
         // Increase the player's progress
         QuestPersistenceService service = Sponge.getServiceManager().provide(QuestPersistenceService.class).get();
-        service.setProgressLevel(player, questLine, progressAfter, ()->{
+        service.setProgressLevel(player, questLine, progressAfter, () -> {
 
             // Execute the console commands
             for (String command : commands) {

@@ -3,12 +3,14 @@ package online.pixelbuilt.pbquests;
 import com.google.inject.Inject;
 import online.pixelbuilt.pbquests.persistence.QuestDAO;
 import online.pixelbuilt.pbquests.persistence.QuestPersistenceService;
-import online.pixelbuilt.pbquests.utils.*;
+import online.pixelbuilt.pbquests.utils.ChatUtils;
+import online.pixelbuilt.pbquests.utils.Command;
+import online.pixelbuilt.pbquests.utils.Config;
+import online.pixelbuilt.pbquests.utils.Quest;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
@@ -24,7 +26,7 @@ import java.util.*;
 
 @Plugin(name = "PixelBuiltQuests",
         id = "pixelbuilt-quests",
-        authors = { "Eufranio" })
+        authors = {"Eufranio"})
 public class PixelBuiltQuests {
 
     public static Logger logger;
@@ -58,9 +60,6 @@ public class PixelBuiltQuests {
         config.load();
         QuestPersistenceService db = new QuestPersistenceService(new QuestDAO());
         Sponge.getServiceManager().setProvider(this, QuestPersistenceService.class, db);
-
-        QuestService questService = new QuestService();
-        questService.initialize();
 
         Command.registerCommand();
         Sponge.getEventManager().registerListeners(this, new Listeners());

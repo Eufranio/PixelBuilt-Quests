@@ -44,6 +44,7 @@ public class BlockLocation {
         this.questLine = questLine;
     }
 
-    public BlockLocation() {}
+    public BlockLocation() {
+    }
 
 }

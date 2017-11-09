@@ -40,7 +40,7 @@ public class QuestDAO implements IQuestDAO {
         FindIterable<Document> doc = db.getCollection("players").find(Filters.eq("UUID", p));
 
         for (Document document : doc) {
-            return ((Document)document.get("quests")).getInteger(questLine);
+            return ((Document) document.get("quests")).getInteger(questLine);
         }
 
         return 0;

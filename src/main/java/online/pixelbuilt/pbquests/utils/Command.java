@@ -42,14 +42,14 @@ public class Command {
                             String action = args.<String>getOne("action").get();
                             String arg = args.<String>getOne("args").get();
 
-                            BlockRay<World> blockRay = BlockRay.from((Player)src)
+                            BlockRay<World> blockRay = BlockRay.from((Player) src)
                                     .skipFilter(BlockRay.continueAfterFilter(BlockRay.onlyAirFilter(), 1))
                                     .build();
                             Optional<BlockRayHit<World>> hitOpt = blockRay.end();
-                            if(hitOpt.isPresent()) {
+                            if (hitOpt.isPresent()) {
 
                                 // Spawning the NPC
-                                if(action.equalsIgnoreCase("spawnnpc")) {
+                                if (action.equalsIgnoreCase("spawnnpc")) {
 
                                     EntityType entity = EntityTypes.VILLAGER;
 
@@ -70,7 +70,7 @@ public class Command {
                                     hitOpt.get().getExtent().spawnEntity(npc);
 
                                 } else if (action.equalsIgnoreCase("checkprogress")) {
-                                    ChatUtils.waitForResponse((Player)src,"&a Type the Quest Line that you want to query", (player1, questLine) -> {
+                                    ChatUtils.waitForResponse((Player) src, "&a Type the Quest Line that you want to query", (player1, questLine) -> {
                                         Player player = Sponge.getServer().getPlayer(arg).get();
                                         Sponge.getServiceManager()
                                                 .provide(QuestPersistenceService.class)
@@ -79,23 +79,23 @@ public class Command {
                                                             player1.sendMessage(
                                                                     TextSerializers.FORMATTING_CODE
                                                                             .deserialize("&a Progress of &e" + arg + ": " + i
-                                                                        ));
-                                                }));
-                                        });
+                                                                            ));
+                                                        }));
+                                    });
                                 } else if (action.equalsIgnoreCase("setprogress")) {
-                                    ChatUtils.waitForResponse((Player)src, "&a Type the Quest Line that you want to set the progress of the player", (player, questLine) -> {
-                                        ChatUtils.waitForResponse((Player)src, "&aType the progress that you want to set for " + arg, (player1, progress) -> {
+                                    ChatUtils.waitForResponse((Player) src, "&a Type the Quest Line that you want to set the progress of the player", (player, questLine) -> {
+                                        ChatUtils.waitForResponse((Player) src, "&aType the progress that you want to set for " + arg, (player1, progress) -> {
                                             Sponge.getServiceManager()
                                                     .provide(QuestPersistenceService.class)
                                                     .ifPresent(questPersistenceService ->
                                                             questPersistenceService.setProgressLevel(Sponge.getServer().getPlayer(arg).get(),
-                                                            questLine,
-                                                            Integer.parseInt(progress),
-                                                            () -> player.sendMessage(
-                                                                    TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully updated the progress level of &e" + arg + "&a to &e" + progress + "&a!")
-                                                            )));
-                                                    });
-                                            });
+                                                                    questLine,
+                                                                    Integer.parseInt(progress),
+                                                                    () -> player.sendMessage(
+                                                                            TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully updated the progress level of &e" + arg + "&a to &e" + progress + "&a!")
+                                                                    )));
+                                        });
+                                    });
                                 }
 
                             }

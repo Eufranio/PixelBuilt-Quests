@@ -26,8 +26,8 @@ public class ChatUtils {
 
     @Listener
     public void onChat(MessageChannelEvent.Chat e, @Root Player p) {
-        if(users.containsKey(p.getUniqueId())) {
-            if(System.currentTimeMillis() - timeleft.get(p.getUniqueId()) > 10000) {
+        if (users.containsKey(p.getUniqueId())) {
+            if (System.currentTimeMillis() - timeleft.get(p.getUniqueId()) > 10000) {
                 users.remove(p.getUniqueId());
                 timeleft.remove(p.getUniqueId());
                 return;

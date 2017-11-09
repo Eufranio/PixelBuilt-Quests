@@ -10,12 +10,10 @@ import online.pixelbuilt.pbquests.BlockLocation;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataTranslators;
-import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -49,7 +47,7 @@ public class Config {
     }
 
     public void load() {
-        if(!configFile.toFile().exists()) {
+        if (!configFile.toFile().exists()) {
             try {
                 Sponge.getAssetManager().getAsset(instance, "PBQuests.conf").get().copyToFile(configFile);
             } catch (IOException | NoSuchElementException e) {
@@ -60,10 +58,12 @@ public class Config {
         }
 
         // Loading data
-        if(!dataFile.toFile().exists()) {
+        if (!dataFile.toFile().exists()) {
             try (OutputStream os = Files.newOutputStream(dataFile)) {
                 DataFormats.NBT.writeTo(os, new MemoryDataContainer());
-            } catch (IOException e) { e.printStackTrace(); }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         try (InputStream is = Files.newInputStream(dataFile)) {
@@ -91,9 +91,11 @@ public class Config {
                     blocks.add(Sponge.getRegistry().getType(BlockType.class, type).get());
                 }
             }
-        } catch (ObjectMappingException e) {}
+        } catch (ObjectMappingException e) {
+        }
 
-        typeToken = new TypeToken<Map<String, String>>() {};
+        typeToken = new TypeToken<Map<String, String>>() {
+        };
 
         PixelBuiltQuests.logger.info("Config loaded successfully!");
     }
@@ -111,7 +113,9 @@ public class Config {
             DataContainer container = DataTranslators.CONFIGURATION_NODE.translate(dataNode.getNode("data"));
             try (OutputStream os = Files.newOutputStream(dataFile)) {
                 DataFormats.NBT.writeTo(os, container);
-            } catch (IOException e) { e.printStackTrace(); }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).async().submit(PixelBuiltQuests.instance);
     }
 
@@ -131,10 +135,10 @@ public class Config {
     public String getQuestLine(Location<World> loc) {
         try {
             return dataNode.getNode("data").getList(TypeToken.of(BlockLocation.class)).stream().filter(location ->
-                location.x == loc.getBlockX()
-             && location.y == loc.getBlockY()
-             && location.z == loc.getBlockZ()
-             && location.world.toString().equals(loc.getExtent().getUniqueId().toString()))
+                    location.x == loc.getBlockX()
+                            && location.y == loc.getBlockY()
+                            && location.z == loc.getBlockZ()
+                            && location.world.toString().equals(loc.getExtent().getUniqueId().toString()))
                     .findFirst()
                     .get()
                     .questLine;
