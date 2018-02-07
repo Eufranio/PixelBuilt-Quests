@@ -1,23 +1,22 @@
 package online.pixelbuilt.pbquests;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import ninja.leaping.configurate.objectmapping.GuiceObjectMapperFactory;
+import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.utils.*;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.config.DefaultConfig;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
 /**
  * Created by Frani on 05/09/2017.
@@ -30,52 +29,58 @@ public class PixelBuiltQuests {
 
     public static Logger logger;
     public static PixelBuiltQuests instance = null;
-    public static Config config;
-    public static Database db;
-    public static List<Player> playersBusy;
-    public static Map<Player, Quest> runningQuests;
+    public static List<UUID> playersBusy = Lists.newArrayList();
+    public static Map<UUID, Quest> runningQuests = Maps.newHashMap();
 
-    @Inject
-    @DefaultConfig(sharedRoot = false)
-    private Path configFile;
+    private ConfigManager<TriggersCategory> triggersConfig;
+    private ConfigManager<ConfigCategory> mainConfig;
+    private ConfigManager<DatabaseCategory> db;
 
     @Inject
     @ConfigDir(sharedRoot = false)
-    private Path configDir;
+    public File configDir;
 
     @Inject
-    public PixelBuiltQuests(Logger logger) {
-        this.logger = logger;
+    public GuiceObjectMapperFactory factory;
+
+    @Inject
+    public PixelBuiltQuests(Logger l) {
+        logger = l;
     }
 
-    public static PixelBuiltQuests getInstance() {
-        return instance;
+    public static ConfigCategory getConfig() {
+        return instance.mainConfig.getConfig();
+    }
+
+    public static TriggersCategory getTriggers() {
+        return instance.triggersConfig.getConfig();
     }
 
     @Listener
     public void onInit(GamePostInitializationEvent e) {
-        logger.warn("PixelBuilt - Quests is starting!");
         instance = this;
-        config = new Config(this, configFile, configDir);
-        config.load();
-        db = new Database();
+        this.triggersConfig = new ConfigManager<>(new TriggersCategory(), "Triggers.conf", true).load();
+        this.mainConfig = new ConfigManager<>(new ConfigCategory(), "PBQ.conf", false).load();
+        this.db = new ConfigManager<>(new DatabaseCategory(), "Storage.conf", true).load();
+
+        logger.warn("PixelBuilt - Quests is starting!");
         Command.registerCommand();
         Sponge.getEventManager().registerListeners(this, new Listeners());
         Sponge.getEventManager().registerListeners(this, new ChatUtils());
-        playersBusy = new ArrayList<>();
-        runningQuests = new HashMap<>();
     }
 
     @Listener
     public void onStop(GameStoppingEvent e) {
-        config = null;
+        this.triggersConfig.cancelTask();
     }
 
     @Listener
     public void onReload(GameReloadEvent e) {
-        config = null;
-        config = new Config(this, configFile, configDir);
-        config.load();
+        this.mainConfig.load();
+    }
+
+    public static DatabaseCategory getDatabase() {
+        return instance.db.getConfig();
     }
 
 }

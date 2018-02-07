@@ -10,6 +10,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.Living;
@@ -17,6 +18,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.blockray.BlockRay;
@@ -75,12 +77,12 @@ public class Command {
 
                                 } else if (action.equalsIgnoreCase("checkprogress")) {
                                     ChatUtils.waitForResponse((Player)src,"&a Type the Quest Line that you want to query", (player1, questLine) -> {
-                                        player1.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Progress of &e" + arg + ": " + PixelBuiltQuests.db.getProgress(Sponge.getServer().getPlayer(arg).get(), questLine)));
+                                        player1.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Progress of &e" + arg + ": " + PixelBuiltQuests.getDatabase().getProgress(Sponge.getServer().getPlayer(arg).get().getUniqueId(), questLine)));
                                     });
                                 } else if (action.equalsIgnoreCase("setprogress")) {
                                     ChatUtils.waitForResponse((Player)src, "&a Type the Quest Line that you want to set the progress of the player", (player, questLine) -> {
                                         ChatUtils.waitForResponse((Player)src, "&aType the progress that you want to set for " + arg, (player1, progress) -> {
-                                            PixelBuiltQuests.db.setProgressLevel(Sponge.getServer().getPlayer(arg).get(), questLine, Integer.parseInt(progress));
+                                            PixelBuiltQuests.getDatabase().setProgress(Sponge.getServer().getPlayer(arg).get().getUniqueId(), questLine, Integer.parseInt(progress));
                                             player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully updated the progress level of &e" + arg + "&a to &e" + progress + "&a!"));
                                         });
                                     });
