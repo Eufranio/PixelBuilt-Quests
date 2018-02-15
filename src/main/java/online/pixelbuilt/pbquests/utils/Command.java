@@ -16,7 +16,6 @@ import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -63,7 +62,6 @@ public class Command {
 
                                     Living npc = (Living) hitOpt.get().getExtent()
                                             .createEntity(entity, hitOpt.get().getPosition());
-                                    SpawnCause cause = SpawnCause.builder().type(SpawnTypes.PLUGIN).build();
 
                                     npc.offer(Keys.PERSISTS, true);
                                     npc.offer(Keys.AI_ENABLED, false);
@@ -73,7 +71,7 @@ public class Command {
                                     npc.offer(Keys.INVULNERABILITY_TICKS, Integer.MAX_VALUE);
                                     npc.offer(Keys.HAS_GRAVITY, false);
 
-                                    hitOpt.get().getExtent().spawnEntity(npc, Cause.source(cause).build());
+                                    hitOpt.get().getExtent().spawnEntity(npc);
 
                                 } else if (action.equalsIgnoreCase("checkprogress")) {
                                     ChatUtils.waitForResponse((Player)src,"&a Type the Quest Line that you want to query", (player1, questLine) -> {

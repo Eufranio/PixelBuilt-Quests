@@ -84,7 +84,7 @@ public class Quest {
 
         Text error = this.hasAllRequeriments(p);
         if (error != null) {
-            p.sendMessage(Text.of(TextColors.RED, TextStyles.BOLD, " Error: ", TextColors.RESET).concat(error));
+            p.sendMessage(Text.of(TextColors.BLUE, TextStyles.BOLD, " Quests > ", TextColors.RESET).concat(error));
             return;
         }
 
@@ -145,7 +145,7 @@ public class Quest {
             }
             UniqueAccount account = service.getOrCreateAccount(p.getUniqueId()).orElse(null);
             BigDecimal cost = BigDecimal.valueOf(this.cost);
-            TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Cause.source(PixelBuiltQuests.instance).build());
+            TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Sponge.getCauseStackManager().getCurrentCause());
             if (result.getResult() != ResultType.SUCCESS) {
                 return Text.of(TextColors.RED, " You must have $",
                         TextColors.YELLOW, this.cost,
