@@ -30,7 +30,7 @@ mainClassName = 'online.pixelbuilt.pbquests.PixelBuiltQuests'
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
-    compileOnly 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
 }
 
 repositories {
@@ -39,7 +39,3 @@ repositories {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-}

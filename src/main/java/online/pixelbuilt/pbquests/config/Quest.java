@@ -4,6 +4,7 @@ import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.utils.ChatUtils;
+import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
@@ -78,13 +79,16 @@ public class Quest {
     @Setting
     public boolean enforcePermission = false;
 
+    @Setting
+    private boolean oneTime = false;
+
     public void run(Player p) {
         this.player = p.getUniqueId();
         this.itemType = Sponge.getRegistry().getType(ItemType.class, item).orElse(null);
 
         Text error = this.hasAllRequeriments(p);
         if (error != null) {
-            p.sendMessage(Text.of(TextColors.BLUE, TextStyles.BOLD, " Quests > ", TextColors.RESET).concat(error));
+            p.sendMessage(Text.of(Util.toText(PixelBuiltQuests.getConfig().messages.prefix), TextColors.RESET).concat(error));
             return;
         }
 
@@ -126,15 +130,20 @@ public class Quest {
 
     public Text hasAllRequeriments(Player p) {
         if (this.enforcePermission) {
-            if (!p.hasPermission("pbq.quest." + this.questLine + this.questId)) {
-                return Text.of(TextColors.RED, " You don't have permission to run this quest!");
+            if (!p.hasPermission("pbq.quest." + this.questLine + "." + this.questId)) {
+                return Util.toText(PixelBuiltQuests.getConfig().messages.noPerm);
             }
         }
 
+        if (this.oneTime && PixelBuiltQuests.getDatabase().hasRan(p.getUniqueId(), this.questLine, this.questId)) {
+            return Util.toText(PixelBuiltQuests.getConfig().messages.hasRan);
+        }
+
         if (PixelBuiltQuests.getDatabase().getProgress(player, this.questLine) < this.progressRequired) {
-            return Text.of(TextColors.RED, "You need to have at least level ",
-                    TextColors.YELLOW, this.progressRequired,
-                    TextColors.RED, " on the quests to run this one!");
+            return Util.toText(PixelBuiltQuests.getConfig().messages.noLevel
+                    .replace("%level%", ""+this.progressRequired)
+                    .replace("%line%", this.questLine)
+            );
         }
 
         if (this.cost > 0) {
@@ -147,19 +156,18 @@ public class Quest {
             BigDecimal cost = BigDecimal.valueOf(this.cost);
             TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Sponge.getCauseStackManager().getCurrentCause());
             if (result.getResult() != ResultType.SUCCESS) {
-                return Text.of(TextColors.RED, " You must have $",
-                        TextColors.YELLOW, this.cost,
-                        TextColors.RED, " to complete this quest!");
+                return Util.toText(PixelBuiltQuests.getConfig().messages.noMoney
+                        .replace("%money%", ""+this.cost)
+                );
             }
         }
 
         if (this.itemType != null) {
             if (!getPlayer().getInventory().query(this.itemType).peek(1).isPresent()) {
-                return Text.of(
-                        TextColors.RED, " You need at least one ",
-                        TextColors.YELLOW, this.item,
-                        TextColors.RED, " to complete this quest!"
+                return Util.toText(PixelBuiltQuests.getConfig().messages.noItem
+                        .replace("%item%", this.item)
                 );
+
             } else {
                 getPlayer().getInventory().query(this.itemType).poll(1);
             }
@@ -169,7 +177,6 @@ public class Quest {
     }
 
     public void continueTask() {
-
         // Increase the player's progress
         if (this.progressAfter > 0) {
             PixelBuiltQuests.getDatabase().setProgress(player, questLine, progressAfter);
@@ -188,7 +195,7 @@ public class Quest {
 
         World world = Sponge.getServer().getWorld(teleportTo.split(",")[3]).orElse(null);
         if (world == null) {
-            PixelBuiltQuests.logger.error("This world is invalid!");
+            throw new RuntimeException("The world specified in the quest " + this.questId + " is invalid!");
         } else {
             String[] loc = this.teleportTo.split(",");
             this.teleport = new Location<>(world, Integer.valueOf(loc[0]), Integer.valueOf(loc[1]), Integer.valueOf(loc[2]));
@@ -200,6 +207,10 @@ public class Quest {
         if (PixelBuiltQuests.runningQuests.containsKey(player)) {
             PixelBuiltQuests.runningQuests.remove(player);
         }
+
+        getPlayer().sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.finish.replace("%quest%", this.questLine)));
+
+        PixelBuiltQuests.getDatabase().run(player, this.questLine, this.questId);
     }
 
     public Player getPlayer() {

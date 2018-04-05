@@ -3,6 +3,7 @@ package online.pixelbuilt.pbquests;
 import online.pixelbuilt.pbquests.config.Quest;
 import online.pixelbuilt.pbquests.config.Trigger;
 import online.pixelbuilt.pbquests.utils.ChatUtils;
+import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
@@ -52,7 +53,9 @@ public class Listeners {
                     if (quest != null) {
                         quest.run(player);
                     } else {
-                        if (player.hasPermission("pbq.admin")) player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&c There is no Quest with this quest line/id!"));
+                        if (player.hasPermission("pbq.admin")) {
+                            player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
+                        }
                     }
                 }
             }
@@ -104,7 +107,7 @@ public class Listeners {
                 quest.run(p);
             } else {
                 if (p.hasPermission("pbq.admin"))
-                    p.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&c There is no Quest with this quest line/id!"));
+                    p.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
             }
         }
     }
