@@ -28,7 +28,7 @@ public class Trigger {
     public int z;
 
     @Setting
-    public String worldUUID;
+    public UUID worldUUID;
 
     @Setting
     public String questLine;
@@ -36,23 +36,30 @@ public class Trigger {
     @Setting
     public int questId;
 
+    @Setting
+    public boolean onWalk = true;
+
     private Location<World> location;
 
     public Location<World> getLocation() {
         if (this.location == null) {
-            this.location = new Location<World>(Sponge.getServer().getWorld(UUID.fromString(worldUUID)).get(), x, y, z);
+            this.location = new Location<World>(Sponge.getServer().getWorld(worldUUID).get(), x, y, z);
         }
         return this.location;
     }
 
-    public Trigger(Location<World> loc, String questLine, int questId) {
-        this.x = loc.getBlockX();
-        this.y = loc.getBlockY();
-        this.z = loc.getBlockZ();
-        this.worldUUID = loc.getExtent().getUniqueId().toString();
-        this.questId = questId;
-        this.questLine = questLine;
-        this.location = loc;
+    public Trigger(int x, int y, int z, UUID world, String line, int id, boolean onWalk) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.worldUUID = world;
+        this.questId = id;
+        this.questLine = line;
+        this.onWalk = onWalk;
+    }
+
+    public Trigger(Location<World> loc, String line, int id, boolean onWalk) {
+        this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getExtent().getUniqueId(), line, id, onWalk);
     }
 
     public Quest getQuest() {

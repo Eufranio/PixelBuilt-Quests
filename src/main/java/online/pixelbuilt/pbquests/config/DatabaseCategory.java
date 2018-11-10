@@ -18,7 +18,7 @@ import java.util.UUID;
 public class DatabaseCategory {
 
     @Setting
-    public Map<String, PlayerEntry> entries = Maps.newConcurrentMap();
+    public Map<UUID, PlayerEntry> entries = Maps.newConcurrentMap();
 
     @ConfigSerializable
     public static class PlayerEntry {
@@ -32,7 +32,7 @@ public class DatabaseCategory {
     }
 
     @Setting
-    public Map<String, NPCEntry> npcEntryMap = Maps.newConcurrentMap();
+    public Map<UUID, NPCEntry> npcEntryMap = Maps.newConcurrentMap();
 
     @ConfigSerializable
     public static class NPCEntry {
@@ -64,10 +64,10 @@ public class DatabaseCategory {
     }
 
     public void setProgress(UUID player, String line, int progress) {
-        PlayerEntry entry = this.entries.get(player.toString());
+        PlayerEntry entry = this.entries.get(player);
         if (entry == null) {
             entry = new PlayerEntry();
-            this.entries.put(player.toString(), entry);
+            this.entries.put(player, entry);
         }
         Integer playerProgress = entry.questLines.get(line);
         if (playerProgress != null) {
@@ -78,30 +78,30 @@ public class DatabaseCategory {
     }
 
     public Pair<String, Integer> getQuestFromNPC(Entity npc) {
-        NPCEntry npcEntry = this.npcEntryMap.get(npc.getUniqueId().toString());
+        NPCEntry npcEntry = this.npcEntryMap.get(npc.getUniqueId());
         return npcEntry != null ? new Pair<>(npcEntry.line, npcEntry.id) : null;
     }
 
     public void removeNPC(Entity npc) {
-        this.npcEntryMap.remove(npc.getUniqueId().toString());
+        this.npcEntryMap.remove(npc.getUniqueId());
     }
 
-    public void addNPC(Entity npc, String questId, int questLine) {
+    public void addNPC(Entity npc, String questLine, int questId) {
         removeNPC(npc);
-        this.npcEntryMap.put(npc.getUniqueId().toString(), new NPCEntry(questLine, questId));
+        this.npcEntryMap.put(npc.getUniqueId(), new NPCEntry(questId, questLine));
     }
 
     public boolean hasRan(UUID player, String quest, int id) {
-        PlayerEntry entry = this.entries.get(player.toString());
+        PlayerEntry entry = this.entries.get(player);
         if (entry == null) return false;
         return entry.questsRan.contains(quest + "," + id);
     }
 
     public void run(UUID player, String quest, int id) {
-        PlayerEntry entry = this.entries.get(player.toString());
+        PlayerEntry entry = this.entries.get(player);
         if (entry == null) {
             entry = new PlayerEntry();
-            this.entries.put(player.toString(), entry);
+            this.entries.put(player, entry);
         }
         entry.questsRan.add(quest + "," + id);
     }

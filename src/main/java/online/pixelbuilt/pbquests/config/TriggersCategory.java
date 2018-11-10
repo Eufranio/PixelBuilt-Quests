@@ -28,8 +28,8 @@ public class TriggersCategory {
         ).findFirst().orElse(null);
     }
 
-    public void add(Location<World> loc, String questLine, int questId) {
-        triggers.add(new Trigger(loc, questLine, questId));
+    public void add(Location<World> loc, String questLine, int questId, boolean onWalk) {
+        triggers.add(new Trigger(loc, questLine, questId, onWalk));
         PixelBuiltQuests.instance.onReload(null);
     }
 

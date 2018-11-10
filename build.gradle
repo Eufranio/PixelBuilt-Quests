@@ -24,13 +24,14 @@ minecraft {
 }
 
 group = 'online.pixelbuilt.pbquests'
-version = '1.4.1'
+version = '1.5'
 description = 'Quests plugin made for the PixelBuilt server'
 mainClassName = 'online.pixelbuilt.pbquests.PixelBuiltQuests'
 compileJava.options.encoding = 'UTF-8'
 
 dependencies {
     compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compileOnly files('PBQMessages-1.0.jar')
 }
 
 repositories {

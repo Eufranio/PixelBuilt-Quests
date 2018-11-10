@@ -1,9 +1,11 @@
 package online.pixelbuilt.pbquests;
 
+import com.pixelmonmod.pixelmon.entities.pixelmon.Entity1Base;
 import online.pixelbuilt.pbquests.config.Quest;
 import online.pixelbuilt.pbquests.config.Trigger;
 import online.pixelbuilt.pbquests.utils.ChatUtils;
 import online.pixelbuilt.pbquests.utils.Util;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
@@ -14,7 +16,6 @@ import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
@@ -28,7 +29,7 @@ public class Listeners {
 
     @Listener
     public void onMove(MoveEntityEvent event) {
-        if (PixelBuiltQuests.getDatabase().getQuestFromNPC(event.getTargetEntity()) != null) {
+        if (PixelBuiltQuests.getStorage().getQuest(event.getTargetEntity()) != null) {
             event.setCancelled(true);
         }
         if (event.getTargetEntity() instanceof Player) {
@@ -37,7 +38,7 @@ public class Listeners {
                 event.setCancelled(true);
                 return;
             }
-            if (PixelBuiltQuests.runningQuests.containsKey(player.getUniqueId())) return;
+            if (PixelBuiltQuests.runningQuests.contains(player.getUniqueId())) return;
 
             Location<World> from = event.getFromTransform().getLocation();
             Location<World> to = event.getToTransform().getLocation();
@@ -46,8 +47,8 @@ public class Listeners {
                 from.getBlockZ() == to.getBlockZ()) return;
 
             Location<World> location = new Location<World>(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() - 1, player.getLocation().getZ());
-            Trigger trigger = PixelBuiltQuests.getTriggers().at(location);
-            if (trigger != null) {
+            Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
+            if (trigger != null && trigger.onWalk) {
                 if (player.hasPermission("pbq.run")) {
                     Quest quest = trigger.getQuest();
                     if (quest != null) {
@@ -73,10 +74,10 @@ public class Listeners {
                     ChatUtils.waitForResponse(p, "&a Type an action for this entity &7[&9newquest&7 / &9rename &7/ &9delete&7]", (player, action) -> {
                         if (action.equalsIgnoreCase("newquest")) {
                             ChatUtils.waitForResponse(p, "&a Type the number of the Quest (e.g 1) that will be assigned to this NPC!", (player1, response) -> {
-                                ChatUtils.waitForResponse(p, "&a Type the Quest line (e.g default) that will be assigned to this NPC!", (player2, response2) -> {
+                                ChatUtils.waitForResponse(p, "&a Type the Quest line (e.g default) that will be assigned to this NPC!", (player2, line) -> {
                                     int questNumber = Integer.valueOf(response);
-                                    if (response2 != null && !response2.isEmpty()) {
-                                        PixelBuiltQuests.getDatabase().addNPC(event.getTargetEntity(), response2, questNumber);
+                                    if (line != null && !line.isEmpty()) {
+                                        PixelBuiltQuests.getStorage().addNPC(event.getTargetEntity(), Quest.of(line, questNumber));
                                         p.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(" Sucessfully added this NPC to the list of Quest NPCs!"));
                                     }
                                 });
@@ -85,10 +86,13 @@ public class Listeners {
                             ChatUtils.waitForResponse(p, "&aType the name that should be assigned to this NPC", (player3, response) -> {
                                 if (!response.isEmpty()) {
                                     event.getTargetEntity().offer(Keys.DISPLAY_NAME, TextSerializers.FORMATTING_CODE.deserialize(response));
+                                    if (Sponge.getPluginManager().isLoaded("pixelmon") && event.getTargetEntity() instanceof Entity1Base) {
+                                        ((Entity1Base) event.getTargetEntity()).setNickname(response);
+                                    }
                                 }
                             });
                         } else if (action.equalsIgnoreCase("delete")) {
-                            PixelBuiltQuests.getDatabase().removeNPC(event.getTargetEntity());
+                            PixelBuiltQuests.getStorage().removeNPC(event.getTargetEntity());
                             event.getTargetEntity().remove();
                         }
                     });
@@ -98,22 +102,18 @@ public class Listeners {
     }
 
     @Listener
-    public void onInteractEntitySecondary(InteractEntityEvent.Secondary event, @Root Player p) {
+    public void onInteractEntitySecondary(InteractEntityEvent.Secondary.MainHand event, @Root Player p) {
         Entity npc = event.getTargetEntity();
-        if (PixelBuiltQuests.getDatabase().getQuestFromNPC(npc) != null && p.hasPermission("pbq.run")) {
+        Quest quest = PixelBuiltQuests.getStorage().getQuest(npc);
+        if (quest != null && p.hasPermission("pbq.run")) {
             event.setCancelled(true);
-            Quest quest = PixelBuiltQuests.getConfig().getQuestFor(PixelBuiltQuests.getDatabase().getQuestFromNPC(npc));
-            if (quest != null) {
-                quest.run(p);
-            } else {
-                if (p.hasPermission("pbq.admin"))
-                    p.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
-            }
+            quest.run(p);
         }
     }
 
+
     @Listener
-    public void onInteractBlockSecondary(InteractBlockEvent.Secondary event, @First Player p) {
+    public void onInteractBlockSecondary(InteractBlockEvent.Secondary event, @Root Player p) {
         if (event.getHandType() == HandTypes.MAIN_HAND) {
             p.getItemInHand(HandTypes.MAIN_HAND).ifPresent(item -> {
                 if (item.getItem().getId().equalsIgnoreCase(PixelBuiltQuests.getConfig().questSettingsItem) && p.get(Keys.IS_SNEAKING).orElse(false)) {
@@ -123,19 +123,47 @@ public class Listeners {
                         if (action.equalsIgnoreCase("newquest")) {
                             ChatUtils.waitForResponse(p, "&a Type the number of the Quest (e.g 1) that will be assigned to this block!", (player1, questId) -> {
                                 ChatUtils.waitForResponse(p, "&a Type the Quest line (e.g default) that will be assigned to this block!", (player2, questLine) -> {
-                                    if (questLine != null && !questLine.isEmpty()) {
-                                        PixelBuiltQuests.getTriggers().add(event.getTargetBlock().getLocation().get(), questLine, Integer.parseInt(questId));
-                                        p.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully added this block to the list of triggers!"));
-                                    }
+                                    ChatUtils.waitForResponse(p, "&a Should this be a walk on or click trigger? &7[&9walk&7/&9trigger&7]", (player3, r) -> {
+                                        if (questLine != null && !questLine.isEmpty()) {
+                                            Trigger trigger = new Trigger(event.getTargetBlock().getLocation().get(), questLine, Integer.parseInt(questId), r.equalsIgnoreCase("walk"));
+                                            PixelBuiltQuests.getStorage().addTrigger(trigger);
+                                            p.sendMessage(TextSerializers.FORMATTING_CODE.deserialize("&a Sucessfully added this block to the list of triggers!"));
+                                        }
+                                    });
                                 });
                             });
                         } else if (action.equalsIgnoreCase("delete")) {
-                            event.getTargetBlock().getLocation().ifPresent(PixelBuiltQuests.getTriggers()::remove);
+                            event.getTargetBlock().getLocation().ifPresent(loc ->
+                                    PixelBuiltQuests.getStorage()
+                                            .getTriggers()
+                                            .stream()
+                                            .filter(t -> t.getLocation().getBlockPosition().equals(loc.getBlockPosition()))
+                                            .filter(t -> t.getLocation().getExtent().getUniqueId().equals(loc.getExtent().getUniqueId()))
+                                            .findFirst()
+                                            .ifPresent(PixelBuiltQuests.getStorage()::removeTrigger)
+                            );
                             p.sendMessage(Text.of(TextColors.GREEN, " Successfully removed the Trigger from here!"));
                         }
                     });
                 }
             });
+
+            Location<World> loc = event.getTargetBlock().getLocation().orElse(null);
+            if (loc == null) return;
+            Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(loc);
+            if (trigger != null && !trigger.onWalk) {
+                if (p.hasPermission("pbq.run")) {
+                    Quest quest = trigger.getQuest();
+                    if (quest != null) {
+                        quest.run(p);
+                    } else {
+                        if (p.hasPermission("pbq.admin")) {
+                            p.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
+                        }
+                    }
+                }
+            }
+
         }
     }
 }

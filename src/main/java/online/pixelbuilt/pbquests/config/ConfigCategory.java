@@ -13,6 +13,9 @@ import java.util.List;
 @ConfigSerializable
 public class ConfigCategory {
 
+    @Setting(comment = "The storage system you want to use. 1 = flatfile, 2 = SQL (must fill the database fields). Defaults to flatfile")
+    public int storage = 1;
+
     @Setting
     public List<QuestLine> questLines = Lists.newArrayList(new QuestLine());
 
@@ -49,6 +52,26 @@ public class ConfigCategory {
         @Setting
         public String finish = "&aCongratulations, you just finished the &e%quest%&c quest!";
 
+        @Setting
+        public String noProgressMin = "&cYou need at least %progress% progress to run this quest!";
+
+        @Setting
+        public String noProgressExact = "&cYou need to have exactly %progress% progress to run this quest!";
+
+        @Setting
+        public String noProgressMax = "&cYou need to have an maximum of %progress% progress to run this quest!";
+
+    }
+
+    @Setting
+    public DatabaseCategory database = new DatabaseCategory();
+
+    @ConfigSerializable
+    public static class DatabaseCategory {
+
+        @Setting
+        public String url = "jdbc:sqlite:PixelBuiltQuests.db";
+
     }
 
     public Quest getQuestFor(Pair<String, Integer> quest) {
@@ -57,6 +80,10 @@ public class ConfigCategory {
             return questLine.quests.stream().filter(q -> q.questId == quest.getValue()).findFirst().orElse(null);
         }
         return null;
+    }
+
+    public Quest getQuest(String line, int id) {
+        return getQuestFor(new Pair<>(line, id));
     }
 
 }
