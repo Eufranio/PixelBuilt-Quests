@@ -62,8 +62,19 @@ public class Trigger {
         this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getExtent().getUniqueId(), line, id, onWalk);
     }
 
+    public Trigger(Location<World> loc, Quest quest, Type type) {
+        this(loc, quest.getLine().getName(), quest.getId(), type == Type.WALK);
+    }
+
     public Quest getQuest() {
         return PixelBuiltQuests.getConfig().getQuestFor(new Pair<>(questLine, questId));
+    }
+
+    public enum Type {
+
+        WALK,
+        CLICK;
+
     }
 
 }

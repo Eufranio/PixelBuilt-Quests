@@ -21,7 +21,7 @@ public class Config<T> {
 
     public Config(Class<T> clazz, String name) {
         File configDir = PixelBuiltQuests.instance.configDir;
-        if (configDir.exists()) configDir.mkdirs();
+        if (!configDir.exists()) configDir.mkdirs();
 
         File file = new File(PixelBuiltQuests.instance.configDir, name);
         try {

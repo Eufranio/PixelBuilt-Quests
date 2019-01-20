@@ -14,8 +14,7 @@ buildscript {
 plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
     id 'net.minecrell.vanillagradle.server' version '2.2-3'
-    id 'java'
-    id 'application'
+    id 'com.qixalite.spongestart2' version '3.2.3'
 }
 
 minecraft {
@@ -23,20 +22,23 @@ minecraft {
     mappings = "stable_29"
 }
 
-group = 'online.pixelbuilt.pbquests'
-version = '1.5'
-description = 'Quests plugin made for the PixelBuilt server'
-mainClassName = 'online.pixelbuilt.pbquests.PixelBuiltQuests'
-compileJava.options.encoding = 'UTF-8'
+group = pluginGroup
+version = pluginVersion
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
     compileOnly files('PBQMessages-1.0.jar')
+}
+
+spongestart {
+    minecraft '1.12.2'
 }
 
 repositories {
     mavenCentral()
 }
+
+sponge.plugin.id = pluginId
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

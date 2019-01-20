@@ -8,6 +8,8 @@ import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
@@ -30,9 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class Quest {
 
     @Setting
-    private String item = "minecraft:stone";
-
-    private ItemType itemType;
+    private ItemType item = ItemTypes.STONE;
 
     @Setting(comment = "1 = min, 2 = exact, 3 = max")
     public int progressCheck = 3;
@@ -45,9 +45,6 @@ public class Quest {
 
     @Setting
     private int timeBetweenMessages = 1;
-
-    @Setting
-    public String progressRequiredMessage = "none";
 
     @Setting
     public int questId = 0;
@@ -89,7 +86,6 @@ public class Quest {
 
     public void run(Player p) {
         UUID player = p.getUniqueId();
-        this.itemType = Sponge.getRegistry().getType(ItemType.class, item).orElse(null);
 
         Text error = this.hasAllRequeriments(p);
         if (error != null) {
@@ -175,7 +171,7 @@ public class Quest {
         if (this.cost > 0) {
             EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
             if (service == null) {
-                PixelBuiltQuests.logger.error("PBQ needs an economy plugin if quest prices are enabled!");
+                PixelBuiltQuests.getInstance().getLogger().error("PBQ needs an economy plugin if quest prices are enabled!");
                 return Text.of(TextColors.RED, " An error ocurred while checking the requeriments of this quest, contact an staff!");
             }
             UniqueAccount account = service.getOrCreateAccount(p.getUniqueId()).orElse(null);
@@ -188,14 +184,13 @@ public class Quest {
             }
         }
 
-        if (this.itemType != null) {
-            if (!p.getInventory().query(this.itemType).peek(1).isPresent()) {
+        if (this.item != null) {
+            if (!p.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(this.item)).peek(1).isPresent()) {
                 return Util.toText(PixelBuiltQuests.getConfig().messages.noItem
-                        .replace("%item%", this.item)
+                        .replace("%item%", this.item.getTranslation().get())
                 );
-
             } else {
-                p.getInventory().query(this.itemType).poll(1);
+                p.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(this.item)).poll(1);
             }
         }
 
@@ -222,9 +217,7 @@ public class Quest {
         }
 
         if (denyMovement) {
-            if (PixelBuiltQuests.playersBusy.contains(player)) {
-                PixelBuiltQuests.playersBusy.remove(player);
-            }
+            PixelBuiltQuests.playersBusy.remove(player);
         }
 
         Player p1 = this.getPlayer(player);

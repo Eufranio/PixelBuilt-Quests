@@ -5,7 +5,6 @@ import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.Quest;
 import online.pixelbuilt.pbquests.config.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
-import online.pixelbuilt.pbquests.storage.StorageModule;
 import org.apache.commons.lang3.SerializationUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
@@ -20,7 +19,7 @@ import java.util.*;
 /**
  * Created by Frani on 10/11/2018.
  */
-public class SQLStorage extends StorageModule {
+public class SQLStorage implements StorageModule {
 
     private DataSource src;
 
@@ -32,7 +31,8 @@ public class SQLStorage extends StorageModule {
             SqlService service = Sponge.getServiceManager().provideUnchecked(SqlService.class);
             this.src = service.getDataSource(PixelBuiltQuests.getConfig().database.url);
 
-            try (Statement s = this.createStatement()) {
+            try (Connection c = this.src.getConnection()) {
+                Statement s = c.createStatement();
                 s.executeUpdate("CREATE TABLE IF NOT EXISTS triggers (" +
                         "x INT, " +
                         "y INT, " +
@@ -42,21 +42,18 @@ public class SQLStorage extends StorageModule {
                         "id INT, " +
                         "walk INT" + // boolean
                         ");");
-                s.executeUpdate("CREATE INDEX ind_loc ON triggers (x, y, z, world);");
 
                 s.executeUpdate("CREATE TABLE IF NOT EXISTS players (" +
                         "uuid VARCHAR(36) PRIMARY KEY, " +
-                        "progress VARBINARY(MAX), " +
-                        "quests VARBINARY(MAX)" +
+                        "progress VARBINARY(65000), " +
+                        "quests VARBINARY(65000)" +
                         ");");
-                s.executeUpdate("CREATE INDEX ind_uuid ON players (uuid);");
 
                 s.executeUpdate("CREATE TABLE IF NOT EXISTS npcs (" +
                         "uuid VARCHAR(36) PRIMARY KEY, " +
                         "line VARCHAR(200), " +
                         "id INT" +
                         ");");
-                s.executeUpdate("CREATE INDEX ind_uuid_npc ON npcs (uuid);");
 
                 // populating triggers
                 ResultSet set = s.executeQuery("SELECT * FROM triggers;");
@@ -79,7 +76,8 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public int getProgress(UUID player, QuestLine line) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT progress FROM players WHERE uuid='" + player.toString() + "';");
             if (set.next()) {
                 HashMap<String, Integer> progress = SerializationUtils.deserialize(set.getBytes("progress"));
@@ -94,18 +92,17 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void setProgress(UUID player, QuestLine line, int progress) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT progress FROM players WHERE uuid='" + player.toString() + "';");
             if (set.next()) {
                 HashMap<String, Integer> map = SerializationUtils.deserialize(set.getBytes("progress"));
                 map.put(line.getName(), progress);
 
-                try (PreparedStatement s2 = this.src.getConnection()
-                        .prepareStatement("UPDATE players SET progress=? WHERE uuid=?;")) {
-                    s2.setBytes(1, SerializationUtils.serialize(map));
-                    s2.setString(2, player.toString());
-                    s2.executeUpdate();
-                }
+                PreparedStatement s2 = c.prepareStatement("UPDATE players SET progress=? WHERE uuid=?;");
+                s2.setBytes(1, SerializationUtils.serialize(map));
+                s2.setString(2, player.toString());
+                s2.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,7 +111,8 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public Quest getQuest(Entity npc) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT line, id FROM npcs WHERE uuid='" + npc.getUniqueId().toString() + "';");
             if (set.next()) {
                 String line = set.getString("line");
@@ -129,12 +127,13 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void addNPC(Entity npc, Quest quest) {
-        try (Statement s = this.createStatement()) {
-            s.executeUpdate("INSERT INTO npcs VALUES (" +
-                    npc.getUniqueId().toString() + ", " +
-                    quest.getLine().getName() + ", " +
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
+            s.executeUpdate("INSERT INTO npcs VALUES ('" +
+                    npc.getUniqueId().toString() + "', '" +
+                    quest.getLine().getName() + "', '" +
                     quest.getId() +
-                    ");");
+                    "');");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -142,7 +141,8 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void removeNPC(Entity npc) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             s.executeUpdate("DELETE FROM npcs WHERE uuid='" + npc.getUniqueId() + "';");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,7 +151,8 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public boolean hasRan(UUID player, Quest quest) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
@@ -165,12 +166,13 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void run(UUID player, Quest quest) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
                 list.add(quest.getLine().getName() + "," + quest.getId());
-                try (PreparedStatement s2 = this.prepare("UPDATE players SET quests=? WHERE uuid=?;")) {
+                try (PreparedStatement s2 = c.prepareStatement("UPDATE players SET quests=? WHERE uuid=?;")) {
                     s2.setBytes(1, SerializationUtils.serialize(list));
                     s2.setString(2, player.toString());
                     s2.executeUpdate();
@@ -192,7 +194,8 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void addTrigger(Trigger trigger) {
-        try (PreparedStatement s = this.prepare("INSERT INTO triggers VALUES(?, ?, ?, ?, ?, ?, ?);")) {
+        try (Connection c = this.src.getConnection()) {
+            PreparedStatement s = c.prepareStatement("INSERT INTO triggers VALUES(?, ?, ?, ?, ?, ?, ?);");
             s.setInt(1, trigger.x);
             s.setInt(2, trigger.y);
             s.setInt(3, trigger.z);
@@ -208,9 +211,11 @@ public class SQLStorage extends StorageModule {
         }
     }
 
+
     @Override
     public void removeTrigger(Trigger trigger) {
-        try (PreparedStatement s = this.prepare("DELETE FROM triggers WHERE x=? AND y=? AND z=? AND world=?;")) {
+        try (Connection c = this.src.getConnection()) {
+            PreparedStatement s = c.prepareStatement("DELETE FROM triggers WHERE x=? AND y=? AND z=? AND world=?;");
             s.setInt(1, trigger.x);
             s.setInt(2, trigger.y);
             s.setInt(3, trigger.z);
@@ -230,7 +235,7 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public List<String> getQuestsRan(UUID player) {
-        try (Statement s = this.createStatement()) {
+        try (Statement s = this.src.getConnection().createStatement()) {
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 return SerializationUtils.deserialize(set.getBytes("quests"));
@@ -243,16 +248,17 @@ public class SQLStorage extends StorageModule {
 
     @Override
     public void resetQuest(UUID player, Quest quest) {
-        try (Statement s = this.createStatement()) {
+        try (Connection c = this.src.getConnection()) {
+            Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
                 list.remove(quest.getLine().getName() + "," + quest.getId());
-                try (PreparedStatement s2 = this.prepare("UPDATE players SET quests=? WHERE uuid=?;")) {
-                    s2.setBytes(1, SerializationUtils.serialize(list));
-                    s2.setString(2, player.toString());
-                    s2.executeUpdate();
-                }
+
+                PreparedStatement s2 = c.prepareStatement("UPDATE players SET quests=? WHERE uuid=?;");
+                s2.setBytes(1, SerializationUtils.serialize(list));
+                s2.setString(2, player.toString());
+                s2.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();

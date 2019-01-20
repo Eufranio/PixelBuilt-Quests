@@ -1,9 +1,7 @@
 package online.pixelbuilt.pbquests;
 
-import com.pixelmonmod.pixelmon.entities.pixelmon.Entity1Base;
 import online.pixelbuilt.pbquests.config.Quest;
 import online.pixelbuilt.pbquests.config.Trigger;
-import online.pixelbuilt.pbquests.utils.ChatUtils;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
@@ -14,6 +12,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.text.Text;
@@ -28,44 +27,39 @@ import org.spongepowered.api.world.World;
 public class Listeners {
 
     @Listener
-    public void onMove(MoveEntityEvent event) {
-        if (PixelBuiltQuests.getStorage().getQuest(event.getTargetEntity()) != null) {
+    public void onMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
+        //if (PixelBuiltQuests.getStorage().getQuest(event.getTargetEntity()) != null) {
+        //    event.setCancelled(true);
+        //}
+        if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) {
             event.setCancelled(true);
+            return;
         }
-        if (event.getTargetEntity() instanceof Player) {
-            Player player = (Player)event.getTargetEntity();
-            if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) {
-                event.setCancelled(true);
-                return;
-            }
-            if (PixelBuiltQuests.runningQuests.contains(player.getUniqueId())) return;
 
-            Location<World> from = event.getFromTransform().getLocation();
-            Location<World> to = event.getToTransform().getLocation();
-            if (from.getBlockX() == to.getBlockX() &&
-                from.getBlockY() == to.getBlockY() &&
-                from.getBlockZ() == to.getBlockZ()) return;
+        if (PixelBuiltQuests.runningQuests.contains(player.getUniqueId())) return;
 
-            Location<World> location = new Location<World>(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() - 1, player.getLocation().getZ());
-            Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
-            if (trigger != null && trigger.onWalk) {
-                if (player.hasPermission("pbq.run")) {
-                    Quest quest = trigger.getQuest();
-                    if (quest != null) {
-                        quest.run(player);
-                    } else {
-                        if (player.hasPermission("pbq.admin")) {
-                            player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
-                        }
-                    }
+        Location<World> from = event.getFromTransform().getLocation();
+        Location<World> to = event.getToTransform().getLocation();
+        if (from.getBlockPosition().equals(to.getBlockPosition())) return;
+
+        Location<World> location = new Location<World>(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() - 1, player.getLocation().getZ());
+        Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
+        if (trigger != null && trigger.onWalk && player.hasPermission("pbq.run")) {
+            Quest quest = trigger.getQuest();
+            if (quest != null) {
+                quest.run(player);
+            } else {
+                if (player.hasPermission("pbq.admin")) {
+                    player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noQuest));
                 }
             }
-
         }
+
     }
 
     @Listener
     public void onInteractEntityPrimary(InteractEntityEvent.Primary event, @First Player p) {
+        /*
         if (event.getHandType() == HandTypes.MAIN_HAND) {
             p.getItemInHand(HandTypes.MAIN_HAND).ifPresent(item -> {
                 if (item.getItem().getId().equalsIgnoreCase(PixelBuiltQuests.getConfig().questSettingsItem) && p.get(Keys.IS_SNEAKING).orElse(false)) {
@@ -98,7 +92,7 @@ public class Listeners {
                     });
                 }
             });
-        }
+        }*/
     }
 
     @Listener
@@ -114,6 +108,7 @@ public class Listeners {
 
     @Listener
     public void onInteractBlockSecondary(InteractBlockEvent.Secondary event, @Root Player p) {
+        /*
         if (event.getHandType() == HandTypes.MAIN_HAND) {
             p.getItemInHand(HandTypes.MAIN_HAND).ifPresent(item -> {
                 if (item.getItem().getId().equalsIgnoreCase(PixelBuiltQuests.getConfig().questSettingsItem) && p.get(Keys.IS_SNEAKING).orElse(false)) {
@@ -164,6 +159,6 @@ public class Listeners {
                 }
             }
 
-        }
+        }*/
     }
 }

@@ -23,16 +23,16 @@ import java.util.*;
  */
 
 @Plugin(name = "PixelBuiltQuests",
+        description = "Quests plugin made for the PixelBuilt server",
         id = "pixelbuilt-quests",
         authors = { "Eufranio" })
 public class PixelBuiltQuests {
 
-    public static Logger logger;
     public static PixelBuiltQuests instance = null;
     public static List<UUID> playersBusy = Lists.newArrayList();
     public static List<UUID> runningQuests = Lists.newArrayList();
 
-    private Config<ConfigCategory> mainConfig = new Config<>(ConfigCategory.class, "PBQ.conf");
+    private Config<ConfigCategory> mainConfig;
     private StorageModule storage;
 
     @Inject
@@ -40,14 +40,26 @@ public class PixelBuiltQuests {
     public File configDir;
 
     @Inject
-    public PixelBuiltQuests(Logger l) {
-        logger = l;
-    }
+    public Logger logger;
 
     @Listener
     public void onInit(GamePostInitializationEvent e) {
         instance = this;
+        this.mainConfig  = new Config<>(ConfigCategory.class, "PBQ.conf");
+        this.initStorage();
 
+        logger.warn("PixelBuilt - Quests is starting!");
+        CommandManager.registerCommands();
+        Sponge.getEventManager().registerListeners(this, new Listeners());
+    }
+
+    @Listener
+    public void onReload(GameReloadEvent e) {
+        this.mainConfig.reload();
+        this.initStorage();
+    }
+
+    private void initStorage() {
         switch (mainConfig.get().storage) {
             case 1:
                 this.storage = new FileStorage();
@@ -60,16 +72,6 @@ public class PixelBuiltQuests {
         }
 
         this.storage.init(this);
-
-        logger.warn("PixelBuilt - Quests is starting!");
-        Command.registerCommand();
-        Sponge.getEventManager().registerListeners(this, new Listeners());
-        Sponge.getEventManager().registerListeners(this, new ChatUtils());
-    }
-
-    @Listener
-    public void onReload(GameReloadEvent e) {
-        this.mainConfig.reload();
     }
 
     public static ConfigCategory getConfig() {
@@ -78,6 +80,14 @@ public class PixelBuiltQuests {
 
     public static StorageModule getStorage() {
         return instance.storage;
+    }
+
+    public static PixelBuiltQuests getInstance() {
+        return instance;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
     }
 
 }

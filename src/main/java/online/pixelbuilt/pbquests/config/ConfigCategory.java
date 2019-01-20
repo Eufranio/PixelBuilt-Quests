@@ -6,6 +6,8 @@ import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by Frani on 16/12/2017.
@@ -75,6 +77,7 @@ public class ConfigCategory {
     }
 
     public Quest getQuestFor(Pair<String, Integer> quest) {
+        if (quest == null) return null;
         QuestLine questLine = questLines.stream().filter(line -> line.name.equals(quest.getKey())).findFirst().orElse(null);
         if (questLine != null) {
             return questLine.quests.stream().filter(q -> q.questId == quest.getValue()).findFirst().orElse(null);
@@ -84,6 +87,27 @@ public class ConfigCategory {
 
     public Quest getQuest(String line, int id) {
         return getQuestFor(new Pair<>(line, id));
+    }
+
+    public List<String> getQuests() {
+        List<String> list = Lists.newArrayList();
+        this.questLines.forEach(line -> line.quests.forEach(q -> {
+            list.add(line.name + " " + q.getId());
+        }));
+        return list;
+    }
+
+    public List<String> getQuestLines() {
+        return this.questLines.stream()
+                .map(QuestLine::getName)
+                .collect(Collectors.toList());
+    }
+
+    public QuestLine getQuestLine(String name) {
+        return this.questLines.stream()
+                .filter(q -> q.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
 }

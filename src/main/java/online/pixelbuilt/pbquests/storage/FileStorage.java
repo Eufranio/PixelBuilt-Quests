@@ -12,10 +12,10 @@ import java.util.UUID;
 /**
  * Created by Frani on 10/11/2018.
  */
-public class FileStorage extends StorageModule {
+public class FileStorage implements StorageModule {
 
-    private Config<DatabaseCategory> dbConfig = new Config<>(DatabaseCategory.class, "database.conf");
-    private Config<TriggersCategory> triggersConfig = new Config<>(TriggersCategory.class, "triggers.conf");
+    private Config<DatabaseCategory> dbConfig = new Config<>(DatabaseCategory.class, "Database.conf");
+    private Config<TriggersCategory> triggersConfig = new Config<>(TriggersCategory.class, "Triggers.conf");
 
     @Override
     public void init(PixelBuiltQuests instance) {

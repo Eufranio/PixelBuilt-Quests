@@ -53,7 +53,7 @@ public class DatabaseCategory {
     }
 
     public int getProgress(UUID player, String line) {
-        PlayerEntry entry = entries.get(player.toString());
+        PlayerEntry entry = entries.get(player);
         if (entry != null) {
             Integer progress = entry.questLines.get(line);
             if (progress != null) {
