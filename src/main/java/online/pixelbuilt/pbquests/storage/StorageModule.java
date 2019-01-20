@@ -1,8 +1,8 @@
 package online.pixelbuilt.pbquests.storage;
 
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
-import online.pixelbuilt.pbquests.config.Quest;
-import online.pixelbuilt.pbquests.config.QuestLine;
+import online.pixelbuilt.pbquests.quest.Quest;
+import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.Location;
@@ -21,6 +21,10 @@ public interface StorageModule {
     int getProgress(UUID player, QuestLine line);
 
     void setProgress(UUID player, QuestLine line, int progress);
+
+    default void addProgress(UUID player, QuestLine line, int progress) {
+        this.setProgress(player, line, getProgress(player, line) + progress);
+    }
 
     Quest getQuest(Entity npc);
 

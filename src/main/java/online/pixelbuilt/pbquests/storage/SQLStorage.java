@@ -2,8 +2,8 @@ package online.pixelbuilt.pbquests.storage;
 
 import com.google.common.collect.Lists;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
-import online.pixelbuilt.pbquests.config.Quest;
-import online.pixelbuilt.pbquests.config.QuestLine;
+import online.pixelbuilt.pbquests.quest.Quest;
+import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.spongepowered.api.Sponge;

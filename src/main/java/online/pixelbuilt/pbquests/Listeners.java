@@ -1,11 +1,8 @@
 package online.pixelbuilt.pbquests;
 
-import online.pixelbuilt.pbquests.config.Quest;
+import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.config.Trigger;
 import online.pixelbuilt.pbquests.utils.Util;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -15,9 +12,6 @@ import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 

@@ -9,7 +9,7 @@ import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import java.io.File;
 
 /**
- * Created by Frani on 18/12/2017.
+ * Created by Frani on 03/11/2018.
  */
 public class Config<T> {
 
@@ -19,11 +19,10 @@ public class Config<T> {
     private TypeToken<T> token;
     private T value;
 
-    public Config(Class<T> clazz, String name) {
-        File configDir = PixelBuiltQuests.instance.configDir;
+    public Config(Class<T> clazz, String name, File configDir) {
         if (!configDir.exists()) configDir.mkdirs();
 
-        File file = new File(PixelBuiltQuests.instance.configDir, name);
+        File file = new File(configDir, name);
         try {
             if (!file.exists()) file.createNewFile();
         } catch (Exception e) { e.printStackTrace(); }
@@ -39,8 +38,8 @@ public class Config<T> {
     private T load(boolean set) {
         try {
             this.node = this.loader.load(ConfigurationOptions.defaults().setShouldCopyDefaults(true));
-            T value = set ? this.value : this.node.getValue(token, clazz.newInstance());
-            this.node.setValue(token, value);
+            T value = set ? this.value : this.node.getNode("config").getValue(token, clazz.newInstance());
+            this.node.getNode("config").setValue(token, value);
             this.loader.save(this.node);
             return value;
         } catch (Exception e) {

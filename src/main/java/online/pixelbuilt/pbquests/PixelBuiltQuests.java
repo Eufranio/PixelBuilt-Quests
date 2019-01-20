@@ -3,9 +3,13 @@ package online.pixelbuilt.pbquests;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import online.pixelbuilt.pbquests.config.*;
+import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
+import online.pixelbuilt.pbquests.reward.RewardType;
 import online.pixelbuilt.pbquests.storage.FileStorage;
 import online.pixelbuilt.pbquests.storage.SQLStorage;
 import online.pixelbuilt.pbquests.storage.StorageModule;
+import online.pixelbuilt.pbquests.task.TaskRegistryModule;
+import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.utils.*;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -16,6 +20,7 @@ import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -48,9 +53,13 @@ public class PixelBuiltQuests {
         this.mainConfig  = new Config<>(ConfigCategory.class, "PBQ.conf");
         this.initStorage();
 
+
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
         Sponge.getEventManager().registerListeners(this, new Listeners());
+
+        Sponge.getRegistry().registerModule(TaskType.class, new TaskRegistryModule());
+        Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
     }
 
     @Listener

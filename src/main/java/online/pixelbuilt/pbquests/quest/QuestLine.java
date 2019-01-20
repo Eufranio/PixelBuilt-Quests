@@ -1,4 +1,4 @@
-package online.pixelbuilt.pbquests.config;
+package online.pixelbuilt.pbquests.quest;
 
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
@@ -14,10 +14,10 @@ import java.util.List;
 public class QuestLine {
 
     @Setting
-    public String name = "default";
+    private String name = "default";
 
     @Setting
-    public List<Quest> quests = Lists.newArrayList(new Quest());
+    public List<Integer> quests = Lists.newArrayList(0);
 
     public String getName() {
         return this.name;
