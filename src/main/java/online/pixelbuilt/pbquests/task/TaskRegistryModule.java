@@ -39,7 +39,7 @@ public class TaskRegistryModule implements AdditionalCatalogRegistryModule<TaskT
     }
 
     @Override
-    @DelayedRegistration(RegistrationPhase.PRE_INIT)
+    @DelayedRegistration(RegistrationPhase.INIT)
     public void registerDefaults() {
         this.tasks.putAll(TaskTypes.defaults().stream()
                 .collect(Collectors.toMap(CatalogType::getId, t -> t)));

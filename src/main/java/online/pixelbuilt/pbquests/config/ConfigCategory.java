@@ -20,12 +20,6 @@ public class ConfigCategory {
     public int storage = 1;
 
     @Setting
-    public List<QuestLine> questLines = Lists.newArrayList(new QuestLine());
-
-    @Setting(comment = "ID of the item you want the quest settings item to be")
-    public String questSettingsItem = "minecraft:arrow";
-
-    @Setting
     public Messages messages = new Messages();
 
     @ConfigSerializable
@@ -35,13 +29,7 @@ public class ConfigCategory {
         public String noQuest = "&c There is no Quest with this quest line/id!";
 
         @Setting
-        public String prefix = "&9&l Quests > ";
-
-        @Setting
         public String noPerm = "&cYou don't have permission to run this quest!";
-
-        @Setting
-        public String noLevel = "&cYou need at least level &e%level%&c in the &e%line%&c quest line to run this quest!";
 
         @Setting
         public String noMoney = "&cYou need at least &e$%money%&c to run this quest!";
@@ -53,7 +41,7 @@ public class ConfigCategory {
         public String hasRan = "&cThis is a one time quest and you've already completed it!";
 
         @Setting
-        public String finish = "&aCongratulations, you just finished the &e%quest%&c quest!";
+        public String finish = "&aCongratulations, you just finished the &e%quest%&a quest!";
 
         @Setting
         public String noProgressMin = "&cYou need at least %progress% progress to run this quest!";
@@ -75,40 +63,6 @@ public class ConfigCategory {
         @Setting
         public String url = "jdbc:sqlite:PixelBuiltQuests.db";
 
-    }
-
-    public Quest getQuestFor(Pair<String, Integer> quest) {
-        if (quest == null) return null;
-        QuestLine questLine = questLines.stream().filter(line -> line.name.equals(quest.getKey())).findFirst().orElse(null);
-        if (questLine != null) {
-            return questLine.quests.stream().filter(q -> q.questId == quest.getValue()).findFirst().orElse(null);
-        }
-        return null;
-    }
-
-    public Quest getQuest(String line, int id) {
-        return getQuestFor(new Pair<>(line, id));
-    }
-
-    public List<String> getQuests() {
-        List<String> list = Lists.newArrayList();
-        this.questLines.forEach(line -> line.quests.forEach(q -> {
-            list.add(line.name + " " + q.getId());
-        }));
-        return list;
-    }
-
-    public List<String> getQuestLines() {
-        return this.questLines.stream()
-                .map(QuestLine::getName)
-                .collect(Collectors.toList());
-    }
-
-    public QuestLine getQuestLine(String name) {
-        return this.questLines.stream()
-                .filter(q -> q.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
     }
 
 }

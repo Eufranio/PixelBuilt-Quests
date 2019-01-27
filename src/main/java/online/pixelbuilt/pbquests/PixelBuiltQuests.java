@@ -3,6 +3,8 @@ package online.pixelbuilt.pbquests;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import online.pixelbuilt.pbquests.config.*;
+import online.pixelbuilt.pbquests.quest.executor.QuestExecutorType;
+import online.pixelbuilt.pbquests.quest.executor.QuestExecutorTypeRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardType;
 import online.pixelbuilt.pbquests.storage.FileStorage;
@@ -16,11 +18,10 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -37,7 +38,6 @@ public class PixelBuiltQuests {
     public static List<UUID> playersBusy = Lists.newArrayList();
     public static List<UUID> runningQuests = Lists.newArrayList();
 
-    private Config<ConfigCategory> mainConfig;
     private StorageModule storage;
 
     @Inject
@@ -48,28 +48,35 @@ public class PixelBuiltQuests {
     public Logger logger;
 
     @Listener
-    public void onInit(GamePostInitializationEvent e) {
+    public void onPreInit(GamePreInitializationEvent e) {
         instance = this;
-        this.mainConfig  = new Config<>(ConfigCategory.class, "PBQ.conf");
-        this.initStorage();
 
+        Sponge.getRegistry().registerModule(TaskType.class, new TaskRegistryModule());
+        Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
+        Sponge.getRegistry().registerModule(QuestExecutorType.class, new QuestExecutorTypeRegistryModule());
+
+        ConfigManager.init();
+        this.initStorage();
 
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
         Sponge.getEventManager().registerListeners(this, new Listeners());
+    }
 
-        Sponge.getRegistry().registerModule(TaskType.class, new TaskRegistryModule());
-        Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
+    @Listener
+    public void onInit(GamePostInitializationEvent e) {
+        ConfigManager.loadCatalogs();
     }
 
     @Listener
     public void onReload(GameReloadEvent e) {
-        this.mainConfig.reload();
+        ConfigManager.reload();
+        this.storage.shutdown();
         this.initStorage();
     }
 
     private void initStorage() {
-        switch (mainConfig.get().storage) {
+        switch (ConfigManager.getConfig().storage) {
             case 1:
                 this.storage = new FileStorage();
                 break;
@@ -81,10 +88,6 @@ public class PixelBuiltQuests {
         }
 
         this.storage.init(this);
-    }
-
-    public static ConfigCategory getConfig() {
-        return instance.mainConfig.get();
     }
 
     public static StorageModule getStorage() {

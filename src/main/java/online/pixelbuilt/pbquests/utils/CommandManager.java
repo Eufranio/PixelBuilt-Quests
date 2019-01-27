@@ -2,11 +2,12 @@ package online.pixelbuilt.pbquests.utils;
 
 import com.google.common.collect.Lists;
 import io.github.eufranio.pbqmessages.PBQMessages;
-import javafx.util.Pair;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
+import online.pixelbuilt.pbquests.task.TaskTypes;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -25,6 +26,7 @@ import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.util.blockray.BlockRay;
 import org.spongepowered.api.util.blockray.BlockRayHit;
 import org.spongepowered.api.world.Location;
@@ -66,12 +68,12 @@ public class CommandManager {
                             .filter(s -> s.split(",")[0].equalsIgnoreCase(line.getName()))
                             .map(s -> Integer.parseInt(s.split(",")[1]))
                             .filter(i -> {
-                                Quest quest = PixelBuiltQuests.getConfig().getQuestFor(new Pair<>(line.getName(), i));
-                                return quest != null && quest.oneTime;
+                                Quest quest = ConfigManager.getQuest(i);
+                                return quest != null && quest.getTasks().containsKey(TaskTypes.ONE_TIME);
                             })
                             .collect(Collectors.toList());
                     final User u = user;
-                    quests.forEach(i -> PixelBuiltQuests.getStorage().resetQuest(u.getUniqueId(), Quest.of(line, i)));
+                    quests.forEach(i -> PixelBuiltQuests.getStorage().resetQuest(u.getUniqueId(), line, i));
                     sender.sendMessage(Text.of(
                             TextColors.GREEN, "Successfully resetted oneTime quests!"
                     ));
@@ -95,6 +97,7 @@ public class CommandManager {
                         npc.offer(Keys.AI_ENABLED, false);
                         npc.offer(Keys.CUSTOM_NAME_VISIBLE, true);
                         npc.offer(Keys.INVULNERABILITY_TICKS, Integer.MAX_VALUE);
+                        npc.offer(Keys.INVULNERABLE, true);
                         npc.offer(Keys.HAS_GRAVITY, false);
                         hitOpt.get().getExtent().spawnEntity(npc);
 
@@ -185,9 +188,13 @@ public class CommandManager {
                         GenericArguments.firstParsing(
                                 GenericArguments.seq(
                                         QuestElement.create(Text.of("quest")),
+                                        QuestLineElement.create(Text.of("quest line")),
                                         GenericArguments.enumValue(Text.of("walk/click"), Trigger.Type.class)
                                 ),
-                                QuestElement.create(Text.of("quest"))
+                                GenericArguments.seq(
+                                        QuestElement.create(Text.of("quest")),
+                                        QuestLineElement.create(Text.of("quest line"))
+                                )
                         )
                 )
                 .executor((sender, context) -> {
@@ -197,11 +204,12 @@ public class CommandManager {
 
                     Player p = (Player) sender;
                     Quest quest = context.<Quest>getOne("quest").get();
+                    QuestLine line = context.<QuestLine>getOne("quest line").get();
                     Optional<Trigger.Type> optType = context.getOne("walk/click");
                     if (optType.isPresent()) {
                         // block trigger
                         Location<World> loc = p.getLocation().sub(0, 1, 0);
-                        Trigger trigger = new Trigger(loc, quest, optType.get());
+                        Trigger trigger = new Trigger(loc, quest, line, optType.get());
                         PixelBuiltQuests.getStorage().addTrigger(trigger);
                         sender.sendMessage(Text.of(
                                 TextColors.GREEN, "Successfully added trigger at ", Util.locationToText(trigger.getLocation())
@@ -213,7 +221,7 @@ public class CommandManager {
 
                         Sponge.getEventManager().registerListeners(PixelBuiltQuests.instance, new OneTimeHandler((e, player) -> {
                             if (player.getUniqueId().equals(p.getUniqueId())) {
-                                PixelBuiltQuests.getStorage().addNPC(e.getTargetEntity(), quest);
+                                PixelBuiltQuests.getStorage().addNPC(e.getTargetEntity(), line, quest.getId());
                                 sender.sendMessage(Text.of(
                                         TextColors.GREEN, "Successfully added NPC!"
                                 ));
@@ -261,7 +269,7 @@ public class CommandManager {
 
                         Sponge.getEventManager().registerListeners(PixelBuiltQuests.instance, new OneTimeHandler((e, player) -> {
                             if (player.getUniqueId().equals(p.getUniqueId())) {
-                                Quest quest = PixelBuiltQuests.getStorage().getQuest(e.getTargetEntity());
+                                Tuple<Quest, QuestLine> quest = PixelBuiltQuests.getStorage().getQuest(e.getTargetEntity());
                                 if (quest == null) {
                                     player.sendMessage(Text.of(
                                             TextColors.GREEN, "There's no quest associated with this NPC!"
@@ -310,19 +318,19 @@ public class CommandManager {
                 .executor((sender, context) -> {
                     List<Text> text = Lists.newArrayList(
                             cmd("pbq info <quest line>", "Shows your progress status in the specified quest line"),
-                            cmd("pbq setProgress [<player>] <quest line> <progress>", "Sets the progress of the player in the specified quest line"),
+                            cmd("pbq setProgress <quest line> <progress> [<player>]", "Sets the progress of the player in the specified quest line"),
                             cmd("pbq checkProgress [<player>] <quest line>", "Checks the progress of the player in the specific quest line"),
                             cmd("pbq spawn <type>", "Spawns an NPC of the specified type. Use minecraft:villager if not sure"),
                             cmd("pbq resetOneTime [<player>] <quest line>", "Resets the status of the one time quests of the player in the specified quest line"),
-                            cmd("pbq addQuest [<quest> <walk/click>], [<quest>]", "Adds a quest to a block/entity. If walk/click is specified, it will add the quest to the target " +
-                                    "block. If not, it will add the quest to the target entity"),
+                            cmd("pbq addQuest [<quest id> <quest line> <walk/click>], [<quest id> <quest line>]", "Adds a quest to a block/entity. If walk/click is specified, it will add the quest to the target " +
+                                    "block. If not, it will add the quest to the next clicked entity"),
                             cmd("pbq delete <block/npc>", "Deletes the quest of the target block/entity"),
-                            cmd("pbq rename <name>", "Renames the target entity to the specified name")
+                            cmd("pbq rename <name>", "Renames the next clicked entity to the specified name")
                     );
 
                     PaginationList.builder()
                             .title(Text.of(TextColors.YELLOW, "PBQ Commands"))
-                            .linesPerPage(4)
+                            .linesPerPage(19)
                             .contents(text)
                             .sendTo(sender);
 
@@ -346,7 +354,7 @@ public class CommandManager {
 
     private static class QuestLineElement extends CommandElement {
 
-        public static QuestLineElement create(Text key) {
+        static QuestLineElement create(Text key) {
             return new QuestLineElement(key);
         }
 
@@ -358,7 +366,7 @@ public class CommandManager {
         @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
             String line = args.next();
-            QuestLine l = PixelBuiltQuests.getConfig().getQuestLine(line);
+            QuestLine l = ConfigManager.getLine(line);
             if (l == null) {
                 throw args.createError(Text.of("Invalid quest line!"));
             }
@@ -367,7 +375,7 @@ public class CommandManager {
 
         @Override
         public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
-            return PixelBuiltQuests.getConfig().getQuestLines();
+            return ConfigManager.getLines().stream().map(QuestLine::getName).collect(Collectors.toList());
         }
 
         @Override
@@ -389,10 +397,9 @@ public class CommandManager {
         @Nullable
         @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
-            String line = args.next();
             try {
                 int id = Integer.parseInt(args.next());
-                Quest quest = PixelBuiltQuests.getConfig().getQuest(line, id);
+                Quest quest = ConfigManager.getQuest(id);
                 if (quest == null) {
                     throw args.createError(Text.of("Invalid quest!"));
                 }
@@ -404,19 +411,19 @@ public class CommandManager {
 
         @Override
         public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
-            return PixelBuiltQuests.getConfig().getQuests();
+            return ConfigManager.getQuests().stream().map(Quest::getId).map(String::valueOf).collect(Collectors.toList());
         }
 
         @Override
         public Text getUsage(CommandSource src) {
-            return Text.of("<quest line> <quest id>");
+            return Text.of("<quest id>");
         }
     }
 
     public static class OneTimeHandler {
 
         private BiConsumer<InteractEntityEvent, Player> func;
-        public OneTimeHandler(BiConsumer<InteractEntityEvent, Player> function) {
+        OneTimeHandler(BiConsumer<InteractEntityEvent, Player> function) {
             this.func = function;
         }
 

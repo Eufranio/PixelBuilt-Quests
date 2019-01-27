@@ -5,7 +5,9 @@ import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
+import online.pixelbuilt.pbquests.quest.QuestLine;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -32,10 +34,10 @@ public class Trigger {
     public UUID worldUUID;
 
     @Setting
-    public String questLine;
+    private String questLine;
 
     @Setting
-    public int questId;
+    private int questId;
 
     @Setting
     public boolean onWalk = true;
@@ -63,12 +65,12 @@ public class Trigger {
         this(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getExtent().getUniqueId(), line, id, onWalk);
     }
 
-    public Trigger(Location<World> loc, Quest quest, Type type) {
-        this(loc, quest.getLine().getName(), quest.getId(), type == Type.WALK);
+    public Trigger(Location<World> loc, Quest quest, QuestLine line, Type type) {
+        this(loc, line.getName(), quest.getId(), type == Type.WALK);
     }
 
-    public Quest getQuest() {
-        return PixelBuiltQuests.getConfig().getQuestFor(new Pair<>(questLine, questId));
+    public Tuple<Quest, QuestLine> getQuest() {
+        return new Tuple<>(ConfigManager.getQuest(this.questId), ConfigManager.getLine(this.questLine));
     }
 
     public enum Type {

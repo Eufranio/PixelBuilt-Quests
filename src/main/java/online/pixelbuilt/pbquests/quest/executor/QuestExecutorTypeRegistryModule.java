@@ -1,4 +1,4 @@
-package online.pixelbuilt.pbquests.reward;
+package online.pixelbuilt.pbquests.quest.executor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -13,35 +13,35 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Created by Frani on 20/01/2019.
+ * Created by Frani on 23/01/2019.
  */
-public class RewardRegistryModule implements AdditionalCatalogRegistryModule<RewardType> {
+public class QuestExecutorTypeRegistryModule implements AdditionalCatalogRegistryModule<QuestExecutorType> {
 
-    private Map<String, RewardType> rewards = Maps.newHashMap();
+    private Map<String, QuestExecutorType> executors = Maps.newHashMap();
 
     @Override
-    public void registerAdditionalCatalog(RewardType extraCatalog) {
-        this.rewards.put(extraCatalog.getId(), extraCatalog);
+    public void registerAdditionalCatalog(QuestExecutorType extraCatalog) {
+        this.executors.put(extraCatalog.getId(), extraCatalog);
     }
 
     @Override
-    public Optional<RewardType> getById(String id) {
+    public Optional<QuestExecutorType> getById(String id) {
         String key = id.toLowerCase();
         if (!key.contains(":")) {
             key = "pbq:" + key;
         }
-        return Optional.ofNullable(this.rewards.get(key));
+        return Optional.ofNullable(this.executors.get(key));
     }
 
     @Override
-    public Collection<RewardType> getAll() {
-        return ImmutableList.copyOf(this.rewards.values());
+    public Collection<QuestExecutorType> getAll() {
+        return ImmutableList.copyOf(this.executors.values());
     }
 
     @Override
     @DelayedRegistration(RegistrationPhase.INIT)
     public void registerDefaults() {
-        this.rewards.putAll(RewardTypes.defaults().stream()
+        this.executors.putAll(QuestExecutorTypes.defaults().stream()
                 .collect(Collectors.toMap(CatalogType::getId, r -> r)));
     }
 }

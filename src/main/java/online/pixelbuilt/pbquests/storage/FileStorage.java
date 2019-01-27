@@ -5,6 +5,7 @@ import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -16,8 +17,8 @@ import java.util.UUID;
  */
 public class FileStorage implements StorageModule {
 
-    private Config<DatabaseCategory> dbConfig = new Config<>(DatabaseCategory.class, "Database.conf");
-    private Config<TriggersCategory> triggersConfig = new Config<>(TriggersCategory.class, "Triggers.conf");
+    private Config<DatabaseConfig> dbConfig = new Config<>(DatabaseConfig.class, "Database.conf", PixelBuiltQuests.getInstance().configDir);
+    private Config<TriggersCategory> triggersConfig = new Config<>(TriggersCategory.class, "Triggers.conf", PixelBuiltQuests.getInstance().configDir);
 
     @Override
     public void init(PixelBuiltQuests instance) {
@@ -36,15 +37,13 @@ public class FileStorage implements StorageModule {
     }
 
     @Override
-    public Quest getQuest(Entity npc) {
-        return PixelBuiltQuests.getConfig().getQuestFor(
-                this.dbConfig.get().getQuestFromNPC(npc)
-        );
+    public Tuple<Quest, QuestLine> getQuest(Entity npc) {
+        return this.dbConfig.get().getQuestFromNPC(npc);
     }
 
     @Override
-    public void addNPC(Entity npc, Quest quest) {
-        this.dbConfig.get().addNPC(npc, quest.getLine().getName(), quest.getId());
+    public void addNPC(Entity npc, QuestLine line, int questId) {
+        this.dbConfig.get().addNPC(npc, line.getName(), questId);
         this.dbConfig.save();
     }
 
@@ -55,13 +54,13 @@ public class FileStorage implements StorageModule {
     }
 
     @Override
-    public boolean hasRan(UUID player, Quest quest) {
-        return this.dbConfig.get().hasRan(player, quest.getLine().getName(), quest.getId());
+    public boolean hasRan(UUID player, QuestLine line, int questId) {
+        return this.dbConfig.get().hasRan(player, line.getName(), questId);
     }
 
     @Override
-    public void run(UUID player, Quest quest) {
-        this.dbConfig.get().run(player, quest.getLine().getName(), quest.getId());
+    public void run(UUID player, QuestLine line, int questId) {
+        this.dbConfig.get().run(player, line.getName(), questId);
         this.dbConfig.save();
     }
 
@@ -90,14 +89,20 @@ public class FileStorage implements StorageModule {
     @Override
     public List<String> getQuestsRan(UUID player) {
         return this.dbConfig.get().entries
-                .getOrDefault(player, new DatabaseCategory.PlayerEntry())
+                .getOrDefault(player, new DatabaseConfig.PlayerEntry())
                 .questsRan;
     }
 
     @Override
-    public void resetQuest(UUID player, Quest quest) {
-        this.getQuestsRan(player).remove(quest.getLine().getName() + "," + quest.getId());
+    public void resetQuest(UUID player, QuestLine line, int questId) {
+        this.getQuestsRan(player).remove(line.getName() + "," + questId);
         this.dbConfig.save();
+    }
+
+    @Override
+    public void shutdown() {
+        this.dbConfig.save();
+        this.triggersConfig.save();
     }
 
 }

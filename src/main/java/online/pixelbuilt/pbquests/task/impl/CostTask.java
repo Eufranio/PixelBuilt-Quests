@@ -3,6 +3,7 @@ package online.pixelbuilt.pbquests.task.impl;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.task.BaseTask;
@@ -30,6 +31,8 @@ public class CostTask implements BaseTask {
 
     @Override
     public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
+        if (options.getOrDefault("cost", "0").equals("0")) return true;
+
         EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
         if (service == null) {
             PixelBuiltQuests.getInstance().getLogger().error("PBQ needs an economy plugin if quest prices are enabled!");
@@ -47,7 +50,7 @@ public class CostTask implements BaseTask {
 
         TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Sponge.getCauseStackManager().getCurrentCause());
         if (result.getResult() != ResultType.SUCCESS) {
-            player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noMoney
+            player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noMoney
                     .replace("%money%", cost.toString())
             ));
             return false;

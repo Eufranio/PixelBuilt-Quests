@@ -2,6 +2,7 @@ package online.pixelbuilt.pbquests.storage;
 
 import com.google.common.collect.Lists;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.service.sql.SqlService;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -29,7 +31,7 @@ public class SQLStorage implements StorageModule {
     public void init(PixelBuiltQuests instance) {
         try {
             SqlService service = Sponge.getServiceManager().provideUnchecked(SqlService.class);
-            this.src = service.getDataSource(PixelBuiltQuests.getConfig().database.url);
+            this.src = service.getDataSource(ConfigManager.getConfig().database.url);
 
             try (Connection c = this.src.getConnection()) {
                 Statement s = c.createStatement();
@@ -103,6 +105,16 @@ public class SQLStorage implements StorageModule {
                 s2.setBytes(1, SerializationUtils.serialize(map));
                 s2.setString(2, player.toString());
                 s2.executeUpdate();
+            } else {
+                HashMap<String, Integer> map = new HashMap<>();
+                map.put(line.getName(), progress);
+
+                PreparedStatement s2 = c.prepareStatement("INSERT INTO players VALUES(?, ?, ?)");
+                s2.setString(1, player.toString());
+                s2.setBytes(2, SerializationUtils.serialize(map));
+                s2.setBytes(3, SerializationUtils.serialize(new ArrayList<String>()));
+                s2.executeUpdate();
+                s2.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -110,14 +122,14 @@ public class SQLStorage implements StorageModule {
     }
 
     @Override
-    public Quest getQuest(Entity npc) {
+    public Tuple<Quest, QuestLine> getQuest(Entity npc) {
         try (Connection c = this.src.getConnection()) {
             Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT line, id FROM npcs WHERE uuid='" + npc.getUniqueId().toString() + "';");
             if (set.next()) {
                 String line = set.getString("line");
                 int id = set.getInt("id");
-                return PixelBuiltQuests.getConfig().getQuest(line, id);
+                return new Tuple<>(ConfigManager.getQuest(id), ConfigManager.getLine(line));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -126,13 +138,13 @@ public class SQLStorage implements StorageModule {
     }
 
     @Override
-    public void addNPC(Entity npc, Quest quest) {
+    public void addNPC(Entity npc, QuestLine line, int questId) {
         try (Connection c = this.src.getConnection()) {
             Statement s = c.createStatement();
             s.executeUpdate("INSERT INTO npcs VALUES ('" +
                     npc.getUniqueId().toString() + "', '" +
-                    quest.getLine().getName() + "', '" +
-                    quest.getId() +
+                    line.getName() + "', '" +
+                    questId +
                     "');");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -150,13 +162,13 @@ public class SQLStorage implements StorageModule {
     }
 
     @Override
-    public boolean hasRan(UUID player, Quest quest) {
+    public boolean hasRan(UUID player, QuestLine line, int questId) {
         try (Connection c = this.src.getConnection()) {
             Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
-                return list.contains(quest.getLine().getName().toLowerCase() + "," + quest.getId());
+                return list.contains(line.getName().toLowerCase() + "," + questId);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -165,13 +177,13 @@ public class SQLStorage implements StorageModule {
     }
 
     @Override
-    public void run(UUID player, Quest quest) {
+    public void run(UUID player, QuestLine line, int questId) {
         try (Connection c = this.src.getConnection()) {
             Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
-                list.add(quest.getLine().getName() + "," + quest.getId());
+                list.add(line.getName() + "," + questId);
                 try (PreparedStatement s2 = c.prepareStatement("UPDATE players SET quests=? WHERE uuid=?;")) {
                     s2.setBytes(1, SerializationUtils.serialize(list));
                     s2.setString(2, player.toString());
@@ -200,8 +212,8 @@ public class SQLStorage implements StorageModule {
             s.setInt(2, trigger.y);
             s.setInt(3, trigger.z);
             s.setString(4, trigger.worldUUID.toString());
-            s.setString(5, trigger.questLine);
-            s.setInt(6, trigger.questId);
+            s.setString(5, trigger.getQuest().getSecond().getName());
+            s.setInt(6, trigger.getQuest().getFirst().getId());
             s.setBoolean(7, trigger.onWalk);
             s.executeUpdate();
 
@@ -235,8 +247,8 @@ public class SQLStorage implements StorageModule {
 
     @Override
     public List<String> getQuestsRan(UUID player) {
-        try (Statement s = this.src.getConnection().createStatement()) {
-            ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
+        try (Connection c = this.src.getConnection()) {
+            ResultSet set = c.createStatement().executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 return SerializationUtils.deserialize(set.getBytes("quests"));
             }
@@ -247,13 +259,13 @@ public class SQLStorage implements StorageModule {
     }
 
     @Override
-    public void resetQuest(UUID player, Quest quest) {
+    public void resetQuest(UUID player, QuestLine line, int questId) {
         try (Connection c = this.src.getConnection()) {
             Statement s = c.createStatement();
             ResultSet set = s.executeQuery("SELECT quests FROM players WHERE uuid='" + player + "';");
             if (set.next()) {
                 ArrayList<String> list = SerializationUtils.deserialize(set.getBytes("quests"));
-                list.remove(quest.getLine().getName() + "," + quest.getId());
+                list.remove(line.getName() + "," + questId);
 
                 PreparedStatement s2 = c.prepareStatement("UPDATE players SET quests=? WHERE uuid=?;");
                 s2.setBytes(1, SerializationUtils.serialize(list));
@@ -265,22 +277,10 @@ public class SQLStorage implements StorageModule {
         }
     }
 
-    private Statement createStatement() {
-        try {
-            return this.src.getConnection().createStatement();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private PreparedStatement prepare(String sql) {
-        try {
-            return this.src.getConnection().prepareStatement(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    @Override
+    public void shutdown() {
+        this.src = null;
+        this.triggers.clear();
     }
 
 }

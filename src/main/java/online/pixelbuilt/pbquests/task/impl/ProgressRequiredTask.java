@@ -3,6 +3,7 @@ package online.pixelbuilt.pbquests.task.impl;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.task.BaseTask;
@@ -31,7 +32,7 @@ public class ProgressRequiredTask implements BaseTask {
         switch (Integer.parseInt(options.getOrDefault("progressCheckMode", ""+this.defaultProgressCheckMode))) {
             case 1:
                 if (playerProgress < progressRequired) {
-                    player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noProgressMin
+                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
                             .replace("%progress%", ""+progressRequired)
                     ));
                     return false;
@@ -39,7 +40,7 @@ public class ProgressRequiredTask implements BaseTask {
                 break;
             case 2:
                 if (playerProgress != progressRequired) {
-                    player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noProgressExact
+                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
                             .replace("%progress%", ""+progressRequired)
                     ));
                     return false;
@@ -47,7 +48,7 @@ public class ProgressRequiredTask implements BaseTask {
                 break;
             case 3:
                 if (playerProgress > progressRequired) {
-                    player.sendMessage(Util.toText(PixelBuiltQuests.getConfig().messages.noProgressMax
+                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
                             .replace("%progress%", ""+progressRequired)
                     ));
                     return false;

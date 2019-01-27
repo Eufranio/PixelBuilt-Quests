@@ -5,6 +5,7 @@ import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -26,15 +27,15 @@ public interface StorageModule {
         this.setProgress(player, line, getProgress(player, line) + progress);
     }
 
-    Quest getQuest(Entity npc);
+    Tuple<Quest, QuestLine> getQuest(Entity npc);
 
-    void addNPC(Entity npc, Quest quest);
+    void addNPC(Entity npc, QuestLine line, int id);
 
     void removeNPC(Entity npc);
 
-    boolean hasRan(UUID player, Quest quest);
+    boolean hasRan(UUID player, QuestLine line, int questId);
 
-    void run(UUID player, Quest quest);
+    void run(UUID player, QuestLine line, int questId);
 
     Trigger getTriggerAt(Location<World> location);
 
@@ -46,6 +47,8 @@ public interface StorageModule {
 
     List<String> getQuestsRan(UUID player);
 
-    void resetQuest(UUID player, Quest quest);
+    void resetQuest(UUID player, QuestLine line, int questId);
+
+    void shutdown();
 
 }

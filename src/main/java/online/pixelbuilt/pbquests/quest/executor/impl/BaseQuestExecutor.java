@@ -1,7 +1,10 @@
-package online.pixelbuilt.pbquests.quest;
+package online.pixelbuilt.pbquests.quest.executor.impl;
 
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
+import online.pixelbuilt.pbquests.quest.Quest;
+import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.quest.executor.QuestExecutor;
 import online.pixelbuilt.pbquests.reward.BaseReward;
 import online.pixelbuilt.pbquests.reward.RewardType;
 import online.pixelbuilt.pbquests.task.BaseTask;
@@ -18,18 +21,27 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Frani on 20/01/2019.
  */
-public class QuestExecutor {
+public class BaseQuestExecutor implements QuestExecutor {
 
     private Quest quest;
     private QuestLine questLine;
     private int questId;
     private UUID player;
 
-    public QuestExecutor(Quest quest, QuestLine questLine, int questId, UUID player) {
+    public BaseQuestExecutor() {
+
+    }
+
+    private BaseQuestExecutor(Quest quest, QuestLine questLine, int questId, UUID player) {
         this.quest = quest;
         this.questLine = questLine;
         this.questId = questId;
         this.player = player;
+    }
+
+    @Override
+    public void execute(Quest quest, QuestLine questLine, int questId, Player player) {
+        new BaseQuestExecutor(quest, questLine, questId, player.getUniqueId()).run();
     }
 
     public void run() {
@@ -58,6 +70,7 @@ public class QuestExecutor {
             this.continueTask();
         } else {
             int count = 0;
+            if (quest.messages.isEmpty()) continueTask();
             for (String msg : quest.messages) {
                 count += quest.timeBetweenMessages;
                 final int currentCount = count;
@@ -96,7 +109,7 @@ public class QuestExecutor {
         }
         PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
 
-        String finish = PixelBuiltQuests.getConfig().messages.finish;
+        String finish = ConfigManager.getConfig().messages.finish;
         if (!finish.isEmpty()) {
             player.sendMessage(Util.toText(finish.replace("%quest%", questLine.getName())));
         }

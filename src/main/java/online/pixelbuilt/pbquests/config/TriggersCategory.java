@@ -21,10 +21,8 @@ public class TriggersCategory {
 
     public Trigger at(Location<World> loc) {
         return triggers.stream().filter(trigger ->
-                trigger.getLocation().getBlockX() == loc.getBlockX() &&
-                trigger.getLocation().getBlockY() == loc.getBlockY() &&
-                trigger.getLocation().getBlockZ() == loc.getBlockZ() &&
-                trigger.getLocation().getExtent().getUniqueId().equals(loc.getExtent().getUniqueId())
+                trigger.getLocation().getBlockPosition().equals(loc.getBlockPosition()) &&
+                        trigger.getLocation().getExtent().getUniqueId().equals(loc.getExtent().getUniqueId())
         ).findFirst().orElse(null);
     }
 

@@ -7,6 +7,7 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Created by Frani on 03/11/2018.
@@ -18,6 +19,10 @@ public class Config<T> {
     private Class<T> clazz;
     private TypeToken<T> token;
     private T value;
+
+    public Config(Class<T> clazz, String name, Path configDir) {
+        this(clazz, name, configDir.toFile());
+    }
 
     public Config(Class<T> clazz, String name, File configDir) {
         if (!configDir.exists()) configDir.mkdirs();
