@@ -4,6 +4,7 @@ import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.config.Trigger;
 import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.task.impl.VisitTask;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -15,6 +16,9 @@ import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+
+import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Created by Frani on 06/09/2017.
@@ -47,6 +51,21 @@ public class Listeners {
             }
         }
 
+        VisitTask entry = VisitTask.locations.keys()
+                .stream()
+                .filter(l -> {
+                    Location<World> loc = l.getLocation(new HashMap<>());
+                    if (loc.equals(to)) return true;
+                    if (loc.getExtent().equals(to.getExtent()) && loc.getPosition().distanceSquared(to.getPosition()) <= l.defaultVisitRadius) {
+                        return true;
+                    }
+                    return false;
+                })
+                .findFirst()
+                .orElse(null);
+        if (entry != null) {
+            VisitTask.locations.put(entry, UUID.randomUUID());
+        }
     }
 
     @Listener

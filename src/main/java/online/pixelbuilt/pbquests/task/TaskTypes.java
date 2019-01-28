@@ -20,13 +20,19 @@ public final class TaskTypes {
 
     public static final TaskType ITEM = new TaskType("item", "Item", ItemTask.class);
 
+    public static final TaskType KILL = new TaskType("kill", "Kill Mobs", KillTask.class);
+
+    public static final TaskType VISIT = new TaskType("visit", "Visit Locations", VisitTask.class);
+
     public static List<TaskType> defaults() {
         return Lists.newArrayList(
                 COST,
                 PERMISSION,
                 ONE_TIME,
                 PROGRESS_REQUIRED,
-                ITEM
+                ITEM,
+                KILL,
+                VISIT
         );
     }
 
