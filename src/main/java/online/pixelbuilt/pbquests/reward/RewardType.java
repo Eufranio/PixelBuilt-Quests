@@ -13,7 +13,7 @@ public class RewardType implements CatalogType {
     private String name;
     private Class<? extends BaseReward> reward;
 
-    protected RewardType(String id, String name, Class<? extends BaseReward> reward) {
+    public RewardType(String id, String name, Class<? extends BaseReward> reward) {
         this.id = id;
         this.name = name;
         this.reward = reward;

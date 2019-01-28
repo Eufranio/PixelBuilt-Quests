@@ -13,7 +13,7 @@ public class TaskType implements CatalogType {
     private String name;
     private Class<? extends BaseTask> task;
 
-    protected TaskType(String id, String name, Class<? extends BaseTask> task) {
+    public TaskType(String id, String name, Class<? extends BaseTask> task) {
         this.id = id;
         this.name = name;
         this.task = task;
