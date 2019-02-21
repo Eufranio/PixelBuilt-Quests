@@ -97,17 +97,17 @@ public class BaseQuestExecutor implements QuestExecutor {
         Player player = this.getPlayer();
         if (player == null) return;
 
+        if (quest.denyMovement) {
+            PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
+        }
+        PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
+
         for (Map.Entry<RewardType, Map<String, String>> entry : this.quest.rewards.entrySet()) {
             BaseReward reward = ConfigManager.getMapping(entry.getKey().getCatalogClass());
             if (reward != null) {
                 reward.execute(player, entry.getValue(), quest, questLine, questId);
             }
         }
-
-        if (quest.denyMovement) {
-            PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
-        }
-        PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
 
         String finish = ConfigManager.getConfig().messages.finish;
         if (!finish.isEmpty()) {
