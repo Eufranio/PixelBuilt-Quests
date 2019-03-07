@@ -21,19 +21,9 @@ public class TriggersCategory {
 
     public Trigger at(Location<World> loc) {
         return triggers.stream().filter(trigger ->
-                trigger.getLocation().getBlockPosition().equals(loc.getBlockPosition()) &&
-                        trigger.getLocation().getExtent().getUniqueId().equals(loc.getExtent().getUniqueId())
+                trigger.getPosition().equals(loc.getBlockPosition()) &&
+                        trigger.worldUUID.equals(loc.getExtent().getUniqueId())
         ).findFirst().orElse(null);
-    }
-
-    public void add(Location<World> loc, String questLine, int questId, boolean onWalk) {
-        triggers.add(new Trigger(loc, questLine, questId, onWalk));
-        PixelBuiltQuests.instance.onReload(null);
-    }
-
-    public void remove(Location<World> loc) {
-        triggers.removeIf(t -> t.getLocation().equals(loc));
-        PixelBuiltQuests.instance.onReload(null);
     }
 
 }

@@ -35,7 +35,7 @@ public class ConfigCategory {
         public String noMoney = "&cYou need at least &e$%money%&c to run this quest!";
 
         @Setting
-        public String noItem = "&cYou need at least one &e%item%&c to run this quest!";
+        public String noItem = "&cYou need at least %amount%x &e%item%&c to run this quest!";
 
         @Setting
         public String hasRan = "&cThis is a one time quest and you've already completed it!";

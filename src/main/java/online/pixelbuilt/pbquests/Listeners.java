@@ -38,7 +38,7 @@ public class Listeners {
         Location<World> to = event.getToTransform().getLocation();
         if (from.getBlockPosition().equals(to.getBlockPosition())) return;
 
-        Location<World> location = new Location<World>(player.getWorld(), player.getLocation().getX(), player.getLocation().getY() - 1, player.getLocation().getZ());
+        Location<World> location = to.sub(0, 1, 0);
         Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
         if (trigger != null && trigger.onWalk && player.hasPermission("pbq.run")) {
             Tuple<Quest, QuestLine> quest = trigger.getQuest();
@@ -51,8 +51,7 @@ public class Listeners {
             }
         }
 
-        VisitTask entry = VisitTask.locations.keys()
-                .stream()
+        VisitTask.locations.keys().stream()
                 .filter(l -> {
                     Location<World> loc = l.getLocation(new HashMap<>());
                     if (loc.equals(to)) return true;
@@ -62,10 +61,7 @@ public class Listeners {
                     return false;
                 })
                 .findFirst()
-                .orElse(null);
-        if (entry != null) {
-            VisitTask.locations.put(entry, UUID.randomUUID());
-        }
+                .ifPresent(entry -> VisitTask.locations.put(entry, UUID.randomUUID()));
     }
 
     @Listener

@@ -198,8 +198,8 @@ public class SQLStorage implements StorageModule {
     @Override
     public Trigger getTriggerAt(Location<World> location) {
         return this.triggers.stream()
-                .filter(t -> t.getLocation().getBlockPosition().equals(location.getBlockPosition()))
-                .filter(t -> t.getLocation().getExtent().getUniqueId().equals(location.getExtent().getUniqueId()))
+                .filter(t -> t.getPosition().equals(location.getBlockPosition()))
+                .filter(t -> t.worldUUID.equals(location.getExtent().getUniqueId()))
                 .findFirst()
                 .orElse(null);
     }

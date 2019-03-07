@@ -23,7 +23,7 @@ public class Quest {
 
     public Quest() {
         this.tasks.put(TaskTypes.COST, ImmutableMap.of("cost", "0"));
-        this.tasks.put(TaskTypes.ITEM, ImmutableMap.of("item", ItemTypes.STONE.getId()));
+        this.tasks.put(TaskTypes.ITEM, ImmutableMap.of("item", ItemTypes.STONE.getId(), "amount", "1"));
         this.tasks.put(TaskTypes.ONE_TIME, ImmutableMap.of());
         this.tasks.put(TaskTypes.PERMISSION, ImmutableMap.of("permission", "custom.permission"));
         this.tasks.put(TaskTypes.PROGRESS_REQUIRED, ImmutableMap.of("progressRequired", "0", "progressCheckMode", "3"));

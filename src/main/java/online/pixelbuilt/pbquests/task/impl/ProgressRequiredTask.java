@@ -24,33 +24,39 @@ public class ProgressRequiredTask implements BaseTask {
     @Setting
     public int defaultProgressRequired = 0;
 
+    @Setting
+    public boolean defaultSendMessage = true;
+
     @Override
     public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
         int playerProgress = PixelBuiltQuests.getStorage().getProgress(player.getUniqueId(), line);
         int progressRequired = Integer.parseInt(options.getOrDefault("progressRequired", ""+this.defaultProgressRequired));
-
+        boolean sendMessage = Boolean.parseBoolean(options.getOrDefault("sendMessage", ""+this.defaultSendMessage));
         switch (Integer.parseInt(options.getOrDefault("progressCheckMode", ""+this.defaultProgressCheckMode))) {
             case 1:
                 if (playerProgress < progressRequired) {
-                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
+                    if (sendMessage)
+                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
                             .replace("%progress%", ""+progressRequired)
-                    ));
+                        ));
                     return false;
                 }
                 break;
             case 2:
                 if (playerProgress != progressRequired) {
-                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
+                    if (sendMessage)
+                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
                             .replace("%progress%", ""+progressRequired)
-                    ));
+                        ));
                     return false;
                 }
                 break;
             case 3:
                 if (playerProgress > progressRequired) {
-                    player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
+                    if (sendMessage)
+                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
                             .replace("%progress%", ""+progressRequired)
-                    ));
+                        ));
                     return false;
                 }
                 break;

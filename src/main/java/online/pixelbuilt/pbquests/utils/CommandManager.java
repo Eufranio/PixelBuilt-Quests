@@ -20,6 +20,7 @@ import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.service.pagination.PaginationList;
@@ -299,7 +300,10 @@ public class CommandManager {
                     }
                     Player p = (Player) sender;
 
-                    Text name = context.<Text>getOne("text").get();
+                    Text name = context.<Text>getOne("name").get();
+                    p.sendMessage(Text.of(
+                            TextColors.GREEN, "Click in the entity that you want to rename!"
+                    ));
                     Sponge.getEventManager().registerListeners(PixelBuiltQuests.instance, new OneTimeHandler((e, player) -> {
                         if (player.getUniqueId().equals(p.getUniqueId())) {
                             e.getTargetEntity().offer(Keys.DISPLAY_NAME, name);
@@ -427,7 +431,7 @@ public class CommandManager {
             this.func = function;
         }
 
-        @Listener
+        @Listener(beforeModifications = true, order = Order.FIRST)
         public void onRightClick(InteractEntityEvent.Secondary.MainHand event, @Root Player player) {
             this.func.accept(event, player);
             event.setCancelled(true);

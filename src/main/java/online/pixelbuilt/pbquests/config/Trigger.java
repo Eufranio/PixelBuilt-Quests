@@ -1,5 +1,6 @@
 package online.pixelbuilt.pbquests.config;
 
+import com.flowpowered.math.vector.Vector3i;
 import javafx.util.Pair;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
@@ -43,10 +44,18 @@ public class Trigger {
     public boolean onWalk = true;
 
     private Location<World> location;
+    private Vector3i blockPosition;
+
+    public Vector3i getPosition() {
+        if (this.blockPosition == null) {
+            this.blockPosition = new Vector3i(x, y, z);
+        }
+        return this.blockPosition;
+    }
 
     public Location<World> getLocation() {
         if (this.location == null) {
-            this.location = new Location<World>(Sponge.getServer().getWorld(worldUUID).get(), x, y, z);
+            this.location = new Location<>(Sponge.getServer().loadWorld(worldUUID).get(), this.getPosition());
         }
         return this.location;
     }

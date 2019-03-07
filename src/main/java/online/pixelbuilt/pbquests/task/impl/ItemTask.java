@@ -12,6 +12,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.text.translation.locale.Locales;
 
@@ -27,18 +28,24 @@ public class ItemTask implements BaseTask {
     @Setting
     public ItemType defaultItem = ItemTypes.STONE;
 
+    @Setting
+    public int defaultAmount = 1;
+
     @Override
     public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
         String itemType = options.getOrDefault("item", defaultItem.getId());
-        ItemType type = Sponge.getRegistry().getType(ItemType.class, itemType).orElse(defaultItem);
+        int amount = Integer.parseInt(options.getOrDefault("amount", ""+defaultAmount));
 
-        if (!player.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(type)).peek(1).isPresent()) {
+        ItemType type = Sponge.getRegistry().getType(ItemType.class, itemType).orElse(defaultItem);
+        Inventory inv = player.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(type));
+        if (inv.totalItems() < amount) {
             player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noItem
                     .replace("%item%", type.getName())
+                    .replace("%amount%", ""+amount)
             ));
             return false;
         } else {
-            player.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(type)).poll(1);
+            inv.poll(amount);
         }
 
         return true;
