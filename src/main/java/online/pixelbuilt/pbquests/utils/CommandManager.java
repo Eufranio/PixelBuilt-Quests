@@ -70,7 +70,7 @@ public class CommandManager {
                             .map(s -> Integer.parseInt(s.split(",")[1]))
                             .filter(i -> {
                                 Quest quest = ConfigManager.getQuest(i);
-                                return quest != null && quest.getTasks().containsKey(TaskTypes.ONE_TIME);
+                                return quest != null && quest.tasks.stream().anyMatch(e -> e.type == TaskTypes.ONE_TIME);
                             })
                             .collect(Collectors.toList());
                     final User u = user;
@@ -325,7 +325,7 @@ public class CommandManager {
                             cmd("pbq setProgress <quest line> <progress> [<player>]", "Sets the progress of the player in the specified quest line"),
                             cmd("pbq checkProgress [<player>] <quest line>", "Checks the progress of the player in the specific quest line"),
                             cmd("pbq spawn <type>", "Spawns an NPC of the specified type. Use minecraft:villager if not sure"),
-                            cmd("pbq resetOneTime [<player>] <quest line>", "Resets the status of the one time quests of the player in the specified quest line"),
+                            cmd("pbq resetOneTime <quest line> [<player>]", "Resets the status of the one time quests of the player in the specified quest line"),
                             cmd("pbq addQuest [<quest id> <quest line> <walk/click>], [<quest id> <quest line>]", "Adds a quest to a block/entity. If walk/click is specified, it will add the quest to the target " +
                                     "block. If not, it will add the quest to the next clicked entity"),
                             cmd("pbq delete <block/npc>", "Deletes the quest of the target block/entity"),

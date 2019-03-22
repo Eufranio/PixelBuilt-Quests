@@ -46,10 +46,10 @@ public class BaseQuestExecutor implements QuestExecutor {
 
     public void run() {
         Player player = this.getPlayer();
-        for (Map.Entry<TaskType, Map<String, String>> entry : this.quest.tasks.entrySet()) {
-            BaseTask task = ConfigManager.getMapping(entry.getKey().getCatalogClass());
+        for (Quest.TaskEntry entry : this.quest.tasks) {
+            BaseTask task = ConfigManager.getMapping(entry.type.getCatalogClass());
             if (task != null) {
-                if (!task.complete(entry.getValue(), player, this.quest, this.questLine, this.questId)) {
+                if (!task.complete(entry.options, player, this.quest, this.questLine, this.questId)) {
                     return;
                 }
             }
@@ -102,10 +102,10 @@ public class BaseQuestExecutor implements QuestExecutor {
         }
         PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
 
-        for (Map.Entry<RewardType, Map<String, String>> entry : this.quest.rewards.entrySet()) {
-            BaseReward reward = ConfigManager.getMapping(entry.getKey().getCatalogClass());
+        for (Quest.RewardEntry entry : this.quest.rewards) {
+            BaseReward reward = ConfigManager.getMapping(entry.type.getCatalogClass());
             if (reward != null) {
-                reward.execute(player, entry.getValue(), quest, questLine, questId);
+                reward.execute(player, entry.options, quest, questLine, questId);
             }
         }
 
