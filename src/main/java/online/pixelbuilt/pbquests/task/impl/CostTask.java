@@ -18,20 +18,19 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 /**
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class CostTask implements BaseTask {
+public class CostTask implements BaseTask<CostTask> {
 
     @Setting
-    private int defaultCost = 0;
+    private int cost = 0;
 
     @Override
-    public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
-        if (options.getOrDefault("cost", "0").equals("0")) return true;
+    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
+        if (this.cost == 0) return true;
 
         EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
         if (service == null) {
@@ -43,20 +42,23 @@ public class CostTask implements BaseTask {
         }
 
         UniqueAccount account = service.getOrCreateAccount(player.getUniqueId()).orElse(null);
-        BigDecimal cost = new BigDecimal(options.getOrDefault("cost", ""+this.defaultCost));
-        if (cost.equals(BigDecimal.ZERO)) {
-            return true;
-        }
+        return account.getBalance(service.getDefaultCurrency()).intValue() >= this.cost;
+    }
+
+    @Override
+    public void complete(Player player, Quest quest, QuestLine line, int questId) {
+        if (this.cost == 0) return;
+
+        EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
+        UniqueAccount account = service.getOrCreateAccount(player.getUniqueId()).orElse(null);
+        BigDecimal cost = new BigDecimal(this.cost);
 
         TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Sponge.getCauseStackManager().getCurrentCause());
         if (result.getResult() != ResultType.SUCCESS) {
             player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noMoney
                     .replace("%money%", cost.toString())
             ));
-            return false;
         }
-
-        return true;
     }
 
 }

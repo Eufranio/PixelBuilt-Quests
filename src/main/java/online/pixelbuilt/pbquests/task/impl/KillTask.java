@@ -19,26 +19,22 @@ import java.util.UUID;
  * Created by Frani on 28/01/2019.
  */
 @ConfigSerializable
-public class KillTask implements BaseTask {
+public class KillTask implements BaseTask<KillTask> {
 
     public static Multimap<UUID, EntityType> killed = ArrayListMultimap.create();
 
     @Setting(comment = "checking mode. 1 = killed at least one specific mob, 2 = killed at least X specific mobs, " +
             "3 = killed at least one mob, 4 = killed at least X mobs")
-    public int defaultCheckMode = 1;
+    public int checkMode = 1;
 
     @Setting
-    public int defaultMobCount = 5;
+    public int mobCount = 5;
 
     @Setting
-    public EntityType defaultMob = EntityTypes.ZOMBIE;
+    public EntityType mob = EntityTypes.ZOMBIE;
 
     @Override
-    public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
-        int checkMode = Integer.parseInt(options.getOrDefault("checkMode", ""+this.defaultCheckMode));
-        int mobCount = Integer.parseInt(options.getOrDefault("mobCount", ""+this.defaultMobCount));
-        EntityType mob = Sponge.getRegistry().getType(EntityType.class, options.getOrDefault("mob", this.defaultMob.getId())).orElse(this.defaultMob);
-
+    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
         if (checkMode == 1) {
             return killed.get(player.getUniqueId()).contains(mob);
         } else if (checkMode == 2) {
@@ -48,7 +44,11 @@ public class KillTask implements BaseTask {
         } else if (checkMode == 4) {
             return killed.get(player.getUniqueId()).size() >= mobCount;
         }
-
         return false;
+    }
+
+    @Override
+    public void complete(Player player, Quest quest, QuestLine line, int questId) {
+        //
     }
 }

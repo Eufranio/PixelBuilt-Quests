@@ -9,8 +9,12 @@ import java.util.Map;
 /**
  * Created by Frani on 20/01/2019.
  */
-public interface BaseTask {
+public interface BaseTask<T> {
 
-    boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId);
+    boolean check(Player player, Quest quest, QuestLine line, int questId);
+
+    default void complete(Player player, Quest quest, QuestLine line, int questId) {
+        //
+    }
 
 }

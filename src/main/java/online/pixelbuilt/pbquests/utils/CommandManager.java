@@ -70,7 +70,7 @@ public class CommandManager {
                             .map(s -> Integer.parseInt(s.split(",")[1]))
                             .filter(i -> {
                                 Quest quest = ConfigManager.getQuest(i);
-                                return quest != null && quest.tasks.stream().anyMatch(e -> e.type == TaskTypes.ONE_TIME);
+                                return quest != null && quest.tasks.stream().anyMatch(e -> e.getType() == TaskTypes.ONE_TIME);
                             })
                             .collect(Collectors.toList());
                     final User u = user;

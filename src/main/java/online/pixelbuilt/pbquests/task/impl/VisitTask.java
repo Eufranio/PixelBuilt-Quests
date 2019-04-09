@@ -19,30 +19,29 @@ import java.util.UUID;
  * Created by Frani on 28/01/2019.
  */
 @ConfigSerializable
-public class VisitTask implements BaseTask {
+public class VisitTask implements BaseTask<VisitTask> {
 
     @Setting
-    public String defaultVisitLocation = "0,0,0,world";
+    public String visitLocation = "0,0,0,world";
 
     @Setting
-    public int defaultVisitRadius = 5;
+    public int visitRadius = 5;
 
     public static Multimap<VisitTask, UUID> locations = ArrayListMultimap.create();
 
     @Override
-    public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
-        Location<World> loc = this.getLocation(options);
+    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
+        Location<World> loc = this.getLocation();
         if (loc == null) return true;
 
-        int visitRadius = Integer.parseInt(options.getOrDefault("visitRadius", ""+this.defaultVisitRadius));
         if (!locations.containsKey(this)) {
             locations.put(this, UUID.randomUUID());
         }
 
         for (Map.Entry<VisitTask, UUID> e : locations.entries()) {
             if (e.getValue().equals(player.getUniqueId()) &&
-                    e.getKey().getLocation(options).getExtent().equals(loc.getExtent()) &&
-                    e.getKey().getLocation(options).getBlockPosition().distanceSquared(loc.getBlockPosition()) <= visitRadius) {
+                    e.getKey().getLocation().getExtent().equals(loc.getExtent()) &&
+                    e.getKey().getLocation().getBlockPosition().distanceSquared(loc.getBlockPosition()) <= visitRadius) {
                 return true;
             }
         }
@@ -57,8 +56,8 @@ public class VisitTask implements BaseTask {
         return true;
     }
 
-    public Location<World> getLocation(Map<String, String> options) {
-        String[] string = options.getOrDefault("visitLocation", this.defaultVisitLocation).split(",");
+    public Location<World> getLocation() {
+        String[] string = this.visitLocation.split(",");
         World world = Sponge.getServer().getWorld(string[3]).orElse(null);
         if (world == null) return null;
         return new Location<>(world, Integer.parseInt(string[0]), Integer.parseInt(string[1]), Integer.parseInt(string[2]));

@@ -54,11 +54,11 @@ public class ConfigManager {
     public static void loadCatalogs() {
         try {
             for (RewardType reward : Sponge.getRegistry().getAllOf(RewardType.class)) {
-                mapping.put(reward.getCatalogClass(), new Config<>(reward.getCatalogClass(), reward.getId().replace("pbq:", "") + ".conf", rewardsDir).get());
+                new Config<>(reward.getValueClass(), reward.getId().replace("pbq:", "") + ".conf", rewardsDir);
             }
 
             for (TaskType task : Sponge.getRegistry().getAllOf(TaskType.class)) {
-                mapping.put(task.getCatalogClass(), new Config<>(task.getCatalogClass(), task.getId().replace("pbq:", "") + ".conf", tasksDir).get());
+                new Config<>(task.getValueClass(), task.getId().replace("pbq:", "") + ".conf", tasksDir);
             }
 
             if (!Files.exists(questsDir)) questsDir.toFile().mkdirs();
@@ -78,10 +78,6 @@ public class ConfigManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static <T> T getMapping(Class<? extends T> clazz) {
-        return (T) mapping.get(clazz);
     }
 
     public static Quest getQuest(int questId) {

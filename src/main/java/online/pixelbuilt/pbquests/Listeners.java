@@ -53,9 +53,9 @@ public class Listeners {
 
         VisitTask.locations.keys().stream()
                 .filter(l -> {
-                    Location<World> loc = l.getLocation(new HashMap<>());
+                    Location<World> loc = l.getLocation();
                     if (loc.equals(to)) return true;
-                    if (loc.getExtent().equals(to.getExtent()) && loc.getPosition().distanceSquared(to.getPosition()) <= l.defaultVisitRadius) {
+                    if (loc.getExtent().equals(to.getExtent()) && loc.getPosition().distanceSquared(to.getPosition()) <= l.visitRadius) {
                         return true;
                     }
                     return false;

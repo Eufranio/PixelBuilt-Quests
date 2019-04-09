@@ -10,34 +10,30 @@ import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.living.player.Player;
 
-import java.util.Map;
-
 /**
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class ProgressRequiredTask implements BaseTask {
+public class ProgressRequiredTask implements BaseTask<ProgressRequiredTask> {
 
     @Setting(comment = "1 = min, 2 = exact, 3 = max")
-    public int defaultProgressCheckMode = 3;
+    public int progressCheckMode = 3;
 
     @Setting
-    public int defaultProgressRequired = 0;
+    public int progressRequired = 0;
 
     @Setting
-    public boolean defaultSendMessage = true;
+    public boolean sendMessage = true;
 
     @Override
-    public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
+    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
         int playerProgress = PixelBuiltQuests.getStorage().getProgress(player.getUniqueId(), line);
-        int progressRequired = Integer.parseInt(options.getOrDefault("progressRequired", ""+this.defaultProgressRequired));
-        boolean sendMessage = Boolean.parseBoolean(options.getOrDefault("sendMessage", ""+this.defaultSendMessage));
-        switch (Integer.parseInt(options.getOrDefault("progressCheckMode", ""+this.defaultProgressCheckMode))) {
+        switch (progressCheckMode) {
             case 1:
                 if (playerProgress < progressRequired) {
                     if (sendMessage)
                         player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
-                            .replace("%progress%", ""+progressRequired)
+                                .replace("%progress%", ""+progressRequired)
                         ));
                     return false;
                 }
@@ -46,7 +42,7 @@ public class ProgressRequiredTask implements BaseTask {
                 if (playerProgress != progressRequired) {
                     if (sendMessage)
                         player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
-                            .replace("%progress%", ""+progressRequired)
+                                .replace("%progress%", ""+progressRequired)
                         ));
                     return false;
                 }
@@ -55,13 +51,13 @@ public class ProgressRequiredTask implements BaseTask {
                 if (playerProgress > progressRequired) {
                     if (sendMessage)
                         player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
-                            .replace("%progress%", ""+progressRequired)
+                                .replace("%progress%", ""+progressRequired)
                         ));
                     return false;
                 }
                 break;
         }
-
         return true;
     }
+
 }

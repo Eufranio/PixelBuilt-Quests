@@ -9,8 +9,8 @@ import java.util.Map;
 /**
  * Created by Frani on 20/01/2019.
  */
-public interface BaseReward {
+public interface BaseReward<T> {
 
-    void execute(Player player, Map<String, String> options, Quest quest, QuestLine line, int questId);
+    void execute(Player player, Quest quest, QuestLine line, int questId);
 
 }

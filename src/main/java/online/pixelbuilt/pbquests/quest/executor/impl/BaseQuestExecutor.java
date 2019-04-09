@@ -2,19 +2,17 @@ package online.pixelbuilt.pbquests.quest.executor.impl;
 
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
+import online.pixelbuilt.pbquests.config.serialization.ValueWrapper;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutor;
 import online.pixelbuilt.pbquests.reward.BaseReward;
-import online.pixelbuilt.pbquests.reward.RewardType;
 import online.pixelbuilt.pbquests.task.BaseTask;
-import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -46,13 +44,16 @@ public class BaseQuestExecutor implements QuestExecutor {
 
     public void run() {
         Player player = this.getPlayer();
-        for (Quest.TaskEntry entry : this.quest.tasks) {
-            BaseTask task = ConfigManager.getMapping(entry.type.getCatalogClass());
-            if (task != null) {
-                if (!task.complete(entry.options, player, this.quest, this.questLine, this.questId)) {
-                    return;
-                }
+        for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
+            BaseTask task = v.getValue();
+            if (!task.check(player, this.quest, this.questLine, this.questId)) {
+                return;
             }
+        }
+
+        for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
+            BaseTask task = v.getValue();
+            task.complete(player, this.quest, this.questLine, this.questId);
         }
 
         PixelBuiltQuests.runningQuests.add(player.getUniqueId());
@@ -102,16 +103,14 @@ public class BaseQuestExecutor implements QuestExecutor {
         }
         PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
 
-        for (Quest.RewardEntry entry : this.quest.rewards) {
-            BaseReward reward = ConfigManager.getMapping(entry.type.getCatalogClass());
-            if (reward != null) {
-                reward.execute(player, entry.options, quest, questLine, questId);
-            }
+        for (ValueWrapper<? extends BaseReward> v : this.quest.rewards) {
+            BaseReward reward = v.getValue();
+            reward.execute(player, quest, questLine, questId);
         }
 
         String finish = ConfigManager.getConfig().messages.finish;
-        if (!finish.isEmpty()) {
-            player.sendMessage(Util.toText(finish.replace("%quest%", questLine.getName())));
+        if (!finish.isEmpty() && !quest.displayName.isEmpty()) {
+            player.sendMessage(Util.toText(finish.replace("%quest%", quest.displayName)));
         }
     }
 

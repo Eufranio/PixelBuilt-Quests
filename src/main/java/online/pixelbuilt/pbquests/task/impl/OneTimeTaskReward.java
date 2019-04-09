@@ -11,20 +11,17 @@ import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.living.player.Player;
 
-import java.util.Map;
-
 /**
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class OneTimeTaskReward implements BaseTask, BaseReward {
+public class OneTimeTaskReward implements BaseTask<OneTimeTaskReward>, BaseReward<OneTimeTaskReward> {
 
     @Setting
-    public boolean defaultSendMessage = true;
+    public boolean sendMessage = true;
 
     @Override
-    public boolean complete(Map<String, String> options, Player player, Quest quest, QuestLine line, int questId) {
-        boolean sendMessage = Boolean.parseBoolean(options.getOrDefault("sendMessage", ""+this.defaultSendMessage));
+    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
         if (PixelBuiltQuests.getStorage().hasRan(player.getUniqueId(), line, questId)) {
             if (sendMessage)
                 player.sendMessage(Util.toText(ConfigManager.getConfig().messages.hasRan));
@@ -34,7 +31,7 @@ public class OneTimeTaskReward implements BaseTask, BaseReward {
     }
 
     @Override
-    public void execute(Player player, Map<String, String> options, Quest quest, QuestLine line, int questId) {
+    public void execute(Player player, Quest quest, QuestLine line, int questId) {
         PixelBuiltQuests.getStorage().run(player.getUniqueId(), line, questId);
     }
 }

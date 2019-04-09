@@ -14,19 +14,16 @@ import java.util.Map;
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class ProgressReward implements BaseReward {
+public class ProgressReward implements BaseReward<ProgressReward> {
 
     @Setting(comment = "1 = set, 2 = add")
-    public int defaultProgressMode = 2;
+    public int progressMode = 2;
 
     @Setting
-    public int defaultProgressAfter = 1;
+    public int progressAfter = 1;
 
     @Override
-    public void execute(Player player, Map<String, String> options, Quest quest, QuestLine line, int questId) {
-        int progressMode = Integer.parseInt(options.getOrDefault("progressMode", ""+defaultProgressMode));
-        int progressAfter = Integer.parseInt(options.getOrDefault("progressAfter", ""+defaultProgressAfter));
-
+    public void execute(Player player, Quest quest, QuestLine line, int questId) {
         if (progressMode == 1) {
             PixelBuiltQuests.getStorage().setProgress(player.getUniqueId(), line, progressAfter);
         } else if (progressMode == 2) {

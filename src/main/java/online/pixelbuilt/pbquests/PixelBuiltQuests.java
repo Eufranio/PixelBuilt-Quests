@@ -1,8 +1,11 @@
 package online.pixelbuilt.pbquests;
 
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import online.pixelbuilt.pbquests.config.*;
+import online.pixelbuilt.pbquests.config.serialization.ValueWrapper;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorType;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorTypeRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
@@ -55,6 +58,7 @@ public class PixelBuiltQuests {
         Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
         Sponge.getRegistry().registerModule(QuestExecutorType.class, new QuestExecutorTypeRegistryModule());
 
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(ValueWrapper.class), new ValueWrapper.ValueWrapperTypeSerializer());
         ConfigManager.init();
         this.initStorage();
 

@@ -1,5 +1,6 @@
 package online.pixelbuilt.pbquests.reward.impl;
 
+import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.quest.Quest;
@@ -17,17 +18,17 @@ import java.util.stream.Collectors;
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class CommandReward implements BaseReward {
+public class CommandReward implements BaseReward<CommandReward> {
 
     @Setting
-    public String defaultCommand = "give %player% minecraft:stone";
+    public List<String> commands = Lists.newArrayList("give %player% minecraft:stone");
 
     @Override
-    public void execute(Player player, Map<String, String> options, Quest quest, QuestLine line, int questId) {
-        List<String> commands = Arrays.stream(options.getOrDefault("commands", defaultCommand).split(";"))
+    public void execute(Player player, Quest quest, QuestLine line, int questId) {
+        List<String> cmds = commands.stream()
                 .map(s -> s.replace("%player%", player.getName()))
                 .collect(Collectors.toList());
-        for (String command : commands) {
+        for (String command : cmds) {
             Sponge.getCommandManager().process(Sponge.getServer().getConsole(), command);
         }
     }

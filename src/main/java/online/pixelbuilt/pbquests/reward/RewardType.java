@@ -1,5 +1,6 @@
 package online.pixelbuilt.pbquests.reward;
 
+import online.pixelbuilt.pbquests.utils.BaseType;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.util.annotation.CatalogedBy;
 
@@ -7,7 +8,7 @@ import org.spongepowered.api.util.annotation.CatalogedBy;
  * Created by Frani on 20/01/2019.
  */
 @CatalogedBy(RewardTypes.class)
-public class RewardType implements CatalogType {
+public class RewardType implements BaseType<BaseReward> {
 
     private String id;
     private String name;
@@ -29,7 +30,7 @@ public class RewardType implements CatalogType {
         return this.name;
     }
 
-    public Class<? extends BaseReward> getCatalogClass() {
+    public Class<? extends BaseReward> getValueClass() {
         return this.reward;
     }
 }

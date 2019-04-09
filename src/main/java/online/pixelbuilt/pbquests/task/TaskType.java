@@ -1,13 +1,13 @@
 package online.pixelbuilt.pbquests.task;
 
-import org.spongepowered.api.CatalogType;
+import online.pixelbuilt.pbquests.utils.BaseType;
 import org.spongepowered.api.util.annotation.CatalogedBy;
 
 /**
  * Created by Frani on 20/01/2019.
  */
 @CatalogedBy(TaskTypes.class)
-public class TaskType implements CatalogType {
+public class TaskType implements BaseType<BaseTask> {
 
     private String id;
     private String name;
@@ -29,7 +29,7 @@ public class TaskType implements CatalogType {
         return this.name;
     }
 
-    public Class<? extends BaseTask> getCatalogClass() {
+    public Class<? extends BaseTask> getValueClass() {
         return this.task;
     }
 }
