@@ -4,7 +4,10 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import online.pixelbuilt.pbquests.reward.RewardType;
+import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.utils.BaseType;
+import org.spongepowered.api.CatalogType;
 
 /**
  * Created by Frani on 27/02/2019.
@@ -34,7 +37,15 @@ public class ValueWrapper<T> {
         @Override
         public ValueWrapper deserialize(TypeToken<?> typeToken, ConfigurationNode configurationNode) throws ObjectMappingException {
             try {
-                BaseType type = configurationNode.getNode("type").getValue(TypeToken.of(BaseType.class));
+                BaseType type = null;
+                try {
+                    type = configurationNode.getNode("type").getValue(TypeToken.of(TaskType.class));
+                } catch (ObjectMappingException e1) {
+                    type = configurationNode.getNode("type").getValue(TypeToken.of(RewardType.class));
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+
                 if (type == null) {
                     throw new ObjectMappingException("Invalid type in config!");
                 }
@@ -51,7 +62,10 @@ public class ValueWrapper<T> {
         @Override
         public void serialize(TypeToken<?> typeToken, ValueWrapper valueWrapper, ConfigurationNode configurationNode) throws ObjectMappingException {
             try {
-                configurationNode.getNode("type").setValue(TypeToken.of(BaseType.class), valueWrapper.getType());
+                Object type = valueWrapper.getType();
+                TypeToken token1 = TypeToken.of(type.getClass());
+                configurationNode.getNode("type").setValue(token1, type);
+
                 Object value = valueWrapper.getValue();
                 TypeToken token = TypeToken.of(value.getClass());
                 configurationNode.getNode("value").setValue(token, value);
