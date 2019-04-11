@@ -42,7 +42,14 @@ public class CostTask implements BaseTask<CostTask> {
         }
 
         UniqueAccount account = service.getOrCreateAccount(player.getUniqueId()).orElse(null);
-        return account.getBalance(service.getDefaultCurrency()).intValue() >= this.cost;
+        if (account.getBalance(service.getDefaultCurrency()).intValue() >= this.cost) {
+            return true;
+        }
+
+        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noMoney
+                .replace("%money%", ""+this.cost))
+        );
+        return false;
     }
 
     @Override
