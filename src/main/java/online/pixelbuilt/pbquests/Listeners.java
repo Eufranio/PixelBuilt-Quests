@@ -9,6 +9,7 @@ import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
@@ -64,8 +65,11 @@ public class Listeners {
                 .ifPresent(entry -> VisitTask.locations.put(entry, UUID.randomUUID()));
     }
 
-    @Listener
+    @Listener(order = Order.FIRST, beforeModifications = true)
     public void onInteractEntitySecondary(InteractEntityEvent.Secondary.MainHand event, @Root Player p) {
+        if (PixelBuiltQuests.runningQuests.contains(p.getUniqueId()))
+            return;
+
         Entity npc = event.getTargetEntity();
         Tuple<Quest, QuestLine> info = PixelBuiltQuests.getStorage().getQuest(npc);
         if (info != null && p.hasPermission("pbq.run")) {

@@ -60,8 +60,8 @@ public class BaseQuestExecutor implements QuestExecutor {
 
         // Add player to the list of busy players
         if (quest.denyMovement) {
-            if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) return;
-            PixelBuiltQuests.playersBusy.add(player.getUniqueId());
+            if (!PixelBuiltQuests.playersBusy.contains(player.getUniqueId()))
+                PixelBuiltQuests.playersBusy.add(player.getUniqueId());
         }
 
         if (quest.timeBetweenMessages == 0) {

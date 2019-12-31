@@ -46,10 +46,6 @@ public class ValueWrapper<T> {
                     e2.printStackTrace();
                 }
 
-                if (type == null) {
-                    throw new ObjectMappingException("Invalid type in config!");
-                }
-
                 Class clazz = type.getValueClass();
                 //Class clazz = Class.forName(configurationNode.getNode("class").getString());
                 return new ValueWrapper(configurationNode.getNode("value").getValue(TypeToken.of(clazz), clazz.newInstance()), type);

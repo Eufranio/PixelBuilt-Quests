@@ -28,6 +28,7 @@ version = pluginVersion
 dependencies {
     compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
     compileOnly files('PBQMessages-1.0.jar')
+    compile 'com.github.randombyte-developer:byte-items:v2.4.1'
 }
 
 spongestart {
@@ -36,6 +37,7 @@ spongestart {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 sponge.plugin.id = pluginId

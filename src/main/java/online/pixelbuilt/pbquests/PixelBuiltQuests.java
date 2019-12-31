@@ -15,13 +15,16 @@ import online.pixelbuilt.pbquests.storage.SQLStorage;
 import online.pixelbuilt.pbquests.storage.StorageModule;
 import online.pixelbuilt.pbquests.task.TaskRegistryModule;
 import online.pixelbuilt.pbquests.task.TaskType;
+import online.pixelbuilt.pbquests.task.impl.ByteItemTask;
 import online.pixelbuilt.pbquests.utils.*;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.game.GameRegistryEvent;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.*;
+import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 
 import java.io.File;
@@ -34,7 +37,9 @@ import java.util.*;
 @Plugin(name = "PixelBuiltQuests",
         description = "Quests plugin made for the PixelBuilt server",
         id = "pixelbuilt-quests",
-        authors = { "Eufranio" })
+        authors = { "Eufranio" },
+        dependencies = @Dependency(id = "byte-items", optional = true)
+)
 public class PixelBuiltQuests {
 
     public static PixelBuiltQuests instance = null;
@@ -59,12 +64,23 @@ public class PixelBuiltQuests {
         Sponge.getRegistry().registerModule(QuestExecutorType.class, new QuestExecutorTypeRegistryModule());
 
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(ValueWrapper.class), new ValueWrapper.ValueWrapperTypeSerializer());
+    }
+
+    @Listener
+    public void onStarted(GameStartedServerEvent event) {
         ConfigManager.init();
         this.initStorage();
 
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
         Sponge.getEventManager().registerListeners(this, new Listeners());
+    }
+
+    @Listener
+    public void onRegisterTask(GameRegistryEvent.Register<TaskType> event) {
+        if (Sponge.getPluginManager().isLoaded("byte-items")) {
+            event.register(new TaskType("byteitem", "ByteItem", ByteItemTask.class));
+        }
     }
 
     @Listener
