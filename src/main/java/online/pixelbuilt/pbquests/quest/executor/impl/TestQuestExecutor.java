@@ -7,19 +7,21 @@ import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutor;
 import online.pixelbuilt.pbquests.reward.BaseReward;
+import online.pixelbuilt.pbquests.storage.SQLStorage;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.task.AmountTask;
 import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by Frani on 20/01/2019.
- */
-public class BaseQuestExecutor implements QuestExecutor {
+public class TestQuestExecutor implements QuestExecutor {
 
     private Quest quest;
     private QuestLine questLine;
@@ -35,17 +37,31 @@ public class BaseQuestExecutor implements QuestExecutor {
 
     public void run() {
         Player player = this.getPlayer();
+        PlayerData playerData = ((SQLStorage) PixelBuiltQuests.getStorage()).getData(this.player);
+
+        boolean canComplete = true;
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
-            if (!task.check(player, this.quest, this.questLine, this.quest.getId())) {
-                return;
+            QuestStatus status = playerData.getStatus(task, questLine, quest);
+            if (task instanceof AmountTask)
+                ((AmountTask) task).tryIncrease(playerData, status);
+
+            if (!task.isCompleted(playerData, questLine, quest)) {
+                player.sendMessage(Text.of(
+                        "You must complete this ", task.getType().getName(), " task before complete the quest! ",
+                        task instanceof AmountTask ?
+                                Text.of("Progress: ",
+                                        playerData.getProgress(task, this.questLine, this.quest),
+                                        "/",
+                                        ((AmountTask) task).getTotal()
+                                ) : Text.of()
+                ));
+                canComplete = false;
             }
         }
 
-        for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
-            BaseTask task = v.getValue();
-            task.complete(player, this.quest, this.questLine, this.quest.getId());
-        }
+        if (!canComplete)
+            return;
 
         PixelBuiltQuests.runningQuests.add(player.getUniqueId());
 
@@ -108,5 +124,4 @@ public class BaseQuestExecutor implements QuestExecutor {
     private Player getPlayer() {
         return Sponge.getServer().getPlayer(this.player).orElse(null);
     }
-
 }

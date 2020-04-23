@@ -57,7 +57,7 @@ public class Quest {
     );
 
     @Setting(comment = "reward <-> options mapping")
-    public List<ValueWrapper<? extends BaseReward>> rewards = Lists.newArrayList(
+    public List<ValueWrapper<? extends BaseReward<?>>> rewards = Lists.newArrayList(
             new ValueWrapper<>(new CommandReward(), RewardTypes.COMMAND),
             new ValueWrapper<>(new MessageReward(), RewardTypes.MESSAGE),
             new ValueWrapper<>(new ProgressReward(), RewardTypes.PROGRESS),

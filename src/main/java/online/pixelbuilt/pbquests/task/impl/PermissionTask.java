@@ -5,26 +5,42 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.task.BaseTask;
+import online.pixelbuilt.pbquests.task.TaskType;
+import online.pixelbuilt.pbquests.task.TaskTypes;
 import online.pixelbuilt.pbquests.utils.Util;
-import org.spongepowered.api.entity.living.player.Player;
 
 /**
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class PermissionTask implements BaseTask<PermissionTask> {
+public class PermissionTask implements BaseTask {
+
+    @Setting
+    public int id;
 
     @Setting
     private String permission = "pbq.quest.%line%.%id%";
 
     @Override
-    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
-        String perm = permission.replace("%line%", line.getName())
-                .replace("%id%", ""+questId);
+    public TaskType getType() {
+        return TaskTypes.PERMISSION;
+    }
 
-        if (!player.hasPermission(perm)) {
-            player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noPerm));
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public boolean isCompleted(PlayerData playerData, QuestLine line, Quest quest) {
+        String perm = permission.replace("%line%", line.getName()).replace("%id%", ""+quest.getId());
+
+        if (!playerData.getUser().hasPermission(perm)) {
+            playerData.getUser().getPlayer().ifPresent(p ->
+                    p.sendMessage(Util.toText(ConfigManager.getConfig().messages.noPerm))
+            );
             return false;
         }
         return true;

@@ -7,6 +7,12 @@ import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
+import online.pixelbuilt.pbquests.storage.SQLStorage;
+import online.pixelbuilt.pbquests.storage.StorageModule;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.task.AmountTask;
+import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.task.TaskTypes;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -317,6 +323,54 @@ public class CommandManager {
                 })
                 .build();
 
+        CommandSpec playerStatus = CommandSpec.builder()
+                .permission("pbq.command.status")
+                .executor((src, args) -> {
+                    if (!(src instanceof Player)) {
+                        throw new CommandException(Text.of("Only players can run this command!"));
+                    }
+
+                    PlayerData data = ((SQLStorage) PixelBuiltQuests.getStorage()).getData(((Player) src).getUniqueId());
+                    List<Text> text = Lists.newArrayList();
+
+                    data.startedQuests.forEach(s -> {
+                        String[] arr = s.split(",");
+                        QuestLine line = ConfigManager.getLine(arr[0]);
+                        Quest quest = ConfigManager.getQuest(Integer.parseInt(arr[1]));
+                        text.add(Text.of(
+                                TextColors.YELLOW, "* " + line.getName(),
+                                TextColors.GRAY, "/",
+                                TextColors.YELLOW, quest.displayName
+                        ));
+                        text.add(Text.NEW_LINE);
+
+                        quest.tasks.forEach(t -> {
+                            BaseTask task = t.getValue();
+                            QuestStatus questStatus = data.getStatus(task, line, quest);
+                            text.add(Text.of(
+                                    TextColors.YELLOW, "  > ", task.getType().getName(),
+                                    TextColors.GRAY, " | ",
+                                    task instanceof AmountTask ?
+                                            Text.of(
+                                                    TextColors.GREEN, questStatus.current, "/", ((AmountTask) task).getTotal(),
+                                                    TextColors.YELLOW, "(", ((AmountTask) task).getPercentageCompleted(questStatus), "%)") :
+                                            Text.of(
+                                                    TextColors.GREEN, "Completed: ", task.isCompleted(data, line, quest)
+                                            )
+                            ));
+                            text.add(Text.NEW_LINE);
+                        });
+                    });
+
+                    PaginationList.builder()
+                            .title(Text.of("Quest Info"))
+                            .contents(text)
+                            .sendTo(src);
+
+                    return CommandResult.success();
+                })
+                .build();
+
         CommandSpec main = CommandSpec.builder()
                 .permission("pbq.command.main")
                 .executor((sender, context) -> {
@@ -348,6 +402,7 @@ public class CommandManager {
                 .child(addQuest, "addQuest")
                 .child(delete, "delete")
                 .child(rename, "rename")
+                .child(playerStatus, "playerStatus")
                 .build();
         Sponge.getCommandManager().register(PixelBuiltQuests.instance, main, "pbq", "pbquests");
     }

@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.config.serialization.ValueWrapper;
+import online.pixelbuilt.pbquests.listeners.TaskListener;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorType;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorTypeRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
@@ -55,9 +56,12 @@ public class PixelBuiltQuests {
     @Inject
     public Logger logger;
 
+    TaskListener taskListener;
+
     @Listener
     public void onPreInit(GamePreInitializationEvent e) {
         instance = this;
+        this.taskListener = new TaskListener(this);
 
         Sponge.getRegistry().registerModule(TaskType.class, new TaskRegistryModule());
         Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
@@ -79,7 +83,7 @@ public class PixelBuiltQuests {
     @Listener
     public void onRegisterTask(GameRegistryEvent.Register<TaskType> event) {
         if (Sponge.getPluginManager().isLoaded("byte-items")) {
-            event.register(new TaskType("byteitem", "ByteItem", ByteItemTask.class));
+            event.register(ByteItemTask.TASK_TYPE);
         }
     }
 
@@ -93,6 +97,7 @@ public class PixelBuiltQuests {
         ConfigManager.reload();
         this.storage.shutdown();
         this.initStorage();
+        this.taskListener.reloadEvents();
     }
 
     private void initStorage() {

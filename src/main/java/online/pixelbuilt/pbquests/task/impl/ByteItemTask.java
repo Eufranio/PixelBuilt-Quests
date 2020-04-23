@@ -3,13 +3,11 @@ package online.pixelbuilt.pbquests.task.impl;
 import de.randombyte.byteitems.api.ByteItemsService;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import online.pixelbuilt.pbquests.config.ConfigManager;
-import online.pixelbuilt.pbquests.quest.Quest;
-import online.pixelbuilt.pbquests.quest.QuestLine;
-import online.pixelbuilt.pbquests.task.BaseTask;
-import online.pixelbuilt.pbquests.utils.Util;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.task.AmountTask;
+import online.pixelbuilt.pbquests.task.TaskType;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -20,7 +18,12 @@ import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
  * Created by Frani on 31/12/2019.
  */
 @ConfigSerializable
-public class ByteItemTask implements BaseTask<ByteItemTask> {
+public class ByteItemTask implements AmountTask {
+
+    public static TaskType TASK_TYPE = new TaskType("byteitem", "ByteItem", ByteItemTask.class);
+
+    @Setting
+    public int id;
 
     @Setting
     public String byteItemId = "byte-items:default";
@@ -29,23 +32,28 @@ public class ByteItemTask implements BaseTask<ByteItemTask> {
     public int amount = 10;
 
     @Override
-    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
-        ItemStack item = getItem(byteItemId).createStack();
-        Inventory inv = player.getInventory().query(QueryOperationTypes.ITEM_STACK_IGNORE_QUANTITY.of(item));
-        if (inv.totalItems() < amount) {
-            player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noItem
-                    .replace("%item%", item.getType().getName())
-                    .replace("%amount%", ""+amount)
-            ));
-            return false;
-        }
-        return true;
+    public TaskType getType() {
+        return TASK_TYPE;
     }
 
     @Override
-    public void complete(Player player, Quest quest, QuestLine line, int questId) {
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public int getTotal() {
+        return this.amount;
+    }
+
+    @Override
+    public void tryIncrease(PlayerData data, QuestStatus status) {
         ItemStack item = getItem(byteItemId).createStack();
-        player.getInventory().query(QueryOperationTypes.ITEM_STACK_IGNORE_QUANTITY.of(item)).poll(amount);
+        data.getUser().getPlayer().ifPresent(p -> {
+            Inventory inv = p.getInventory().query(QueryOperationTypes.ITEM_STACK_IGNORE_QUANTITY.of(item));
+            int toRemove = this.getTotal() - status.current;
+            this.increase(data, status, inv.poll(toRemove).get().getQuantity());
+        });
     }
 
     private ItemStackSnapshot getItem(String id) {

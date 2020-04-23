@@ -1,5 +1,6 @@
 package online.pixelbuilt.pbquests.storage;
 
+import io.github.eufranio.config.Config;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.quest.Quest;

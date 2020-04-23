@@ -2,6 +2,7 @@ package online.pixelbuilt.pbquests.config;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.github.eufranio.config.Config;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
@@ -11,7 +12,6 @@ import org.spongepowered.api.Sponge;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -21,7 +21,6 @@ import java.util.stream.Stream;
  */
 public class ConfigManager {
 
-    private static Map<Class<?>, Object> mapping = Maps.newHashMap();
     private static List<Quest> quests = Lists.newArrayList();
     private static List<QuestLine> questLines = Lists.newArrayList();
 
@@ -33,12 +32,11 @@ public class ConfigManager {
     private static Path tasksDir = configDir.resolve("tasks");
 
     public static void init() {
-        config = new Config<>(ConfigCategory.class, "PBQuests.conf", configDir);
+        config = new Config<>(ConfigCategory.class, "PBQuests.conf", configDir.toFile());
         loadResources();
     }
 
     public static void reload() {
-        mapping.clear();
         quests.clear();
         questLines.clear();
         loadResources();
@@ -46,26 +44,26 @@ public class ConfigManager {
     }
 
     private static void loadResources() {
-        Config<QuestLinesCategory> lines = new Config<>(QuestLinesCategory.class, "QuestLines.conf", configDir);
+        Config<QuestLinesCategory> lines = new Config<>(QuestLinesCategory.class, "QuestLines.conf", configDir.toFile());
         questLines.addAll(lines.get().questLines);
-        config = new Config<>(ConfigCategory.class, "PBQuests.conf", configDir);
+        config = new Config<>(ConfigCategory.class, "PBQuests.conf", configDir.toFile());
     }
 
     public static void loadCatalogs() {
         try {
             for (RewardType reward : Sponge.getRegistry().getAllOf(RewardType.class)) {
-                new Config<>(reward.getValueClass(), reward.getId().replace("pbq:", "") + ".conf", rewardsDir);
+                new Config<>(reward.getValueClass(), reward.getId().replace("pbq:", "") + ".conf", rewardsDir.toFile());
             }
 
             for (TaskType task : Sponge.getRegistry().getAllOf(TaskType.class)) {
-                new Config<>(task.getValueClass(), task.getId().replace("pbq:", "") + ".conf", tasksDir);
+                new Config<>(task.getValueClass(), task.getId().replace("pbq:", "") + ".conf", tasksDir.toFile());
             }
 
             if (!Files.exists(questsDir)) questsDir.toFile().mkdirs();
             try (Stream<Path> paths = Files.walk(questsDir)) {
                 paths.filter(Files::isRegularFile)
                         .map(path -> {
-                            Quest quest = new Config<>(Quest.class, path.toFile().getName(), questsDir).get();
+                            Quest quest = new Config<>(Quest.class, path.toFile().getName(), questsDir.toFile()).get();
                             quest.setId(Integer.parseInt(path.toFile().getName().replace(".conf", "")));
                             return quest;
                         })
@@ -73,7 +71,7 @@ public class ConfigManager {
             }
 
             if (quests.isEmpty()) {
-                quests.add(new Config<>(Quest.class, "0.conf", questsDir).get());
+                quests.add(new Config<>(Quest.class, "0.conf", questsDir.toFile()).get());
             }
         } catch (Exception e) {
             e.printStackTrace();

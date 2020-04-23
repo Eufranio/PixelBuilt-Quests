@@ -6,15 +6,20 @@ import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.task.BaseTask;
+import online.pixelbuilt.pbquests.task.TaskType;
+import online.pixelbuilt.pbquests.task.TaskTypes;
 import online.pixelbuilt.pbquests.utils.Util;
-import org.spongepowered.api.entity.living.player.Player;
 
 /**
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class ProgressRequiredTask implements BaseTask<ProgressRequiredTask> {
+public class ProgressRequiredTask implements BaseTask {
+
+    @Setting
+    public int id;
 
     @Setting(comment = "1 = min, 2 = exact, 3 = max")
     public int progressCheckMode = 3;
@@ -26,33 +31,49 @@ public class ProgressRequiredTask implements BaseTask<ProgressRequiredTask> {
     public boolean sendMessage = true;
 
     @Override
-    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
-        int playerProgress = PixelBuiltQuests.getStorage().getProgress(player.getUniqueId(), line);
+    public TaskType getType() {
+        return TaskTypes.PROGRESS_REQUIRED;
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public boolean isCompleted(PlayerData data, QuestLine line, Quest quest) {
+        int playerProgress = PixelBuiltQuests.getStorage().getProgress(data.id, line);
         switch (progressCheckMode) {
             case 1:
                 if (playerProgress < progressRequired) {
                     if (sendMessage)
-                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
-                                .replace("%progress%", ""+progressRequired)
-                        ));
+                        data.getUser().getPlayer().ifPresent(p ->
+                                p.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMin
+                                        .replace("%progress%", ""+progressRequired)
+                                ))
+                        );
                     return false;
                 }
                 break;
             case 2:
                 if (playerProgress != progressRequired) {
                     if (sendMessage)
-                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
-                                .replace("%progress%", ""+progressRequired)
-                        ));
+                        data.getUser().getPlayer().ifPresent(p ->
+                                p.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressExact
+                                        .replace("%progress%", ""+progressRequired)
+                                ))
+                        );
                     return false;
                 }
                 break;
             case 3:
                 if (playerProgress > progressRequired) {
                     if (sendMessage)
-                        player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
-                                .replace("%progress%", ""+progressRequired)
-                        ));
+                        data.getUser().getPlayer().ifPresent(p ->
+                                p.sendMessage(Util.toText(ConfigManager.getConfig().messages.noProgressMax
+                                        .replace("%progress%", ""+progressRequired)
+                                ))
+                        );
                     return false;
                 }
                 break;

@@ -1,43 +1,32 @@
-buildscript {
-    repositories {
-        maven {
-            name = 'forge'
-            url = 'http://files.minecraftforge.net/maven'
-        }
-    }
-
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
-    id 'net.minecrell.vanillagradle.server' version '2.2-3'
-    id 'com.qixalite.spongestart2' version '3.2.3'
-}
-
-minecraft {
-    version = '1.10.2'
-    mappings = "stable_29"
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
 group = pluginGroup
 version = pluginVersion
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
+    compile 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
     compileOnly files('PBQMessages-1.0.jar')
     compile 'com.github.randombyte-developer:byte-items:v2.4.1'
-}
-
-spongestart {
-    minecraft '1.12.2'
+    shadow 'com.github.Eufranio:StorageUtils:2.2'
 }
 
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+}
+
+configurations {
+    compile.extendsFrom shadow
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    classifier = null
+    from sourceSets.main.output
 }
 
 sponge.plugin.id = pluginId

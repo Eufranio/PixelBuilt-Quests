@@ -1,11 +1,14 @@
 package online.pixelbuilt.pbquests.storage;
 
 import com.google.common.collect.Lists;
+import io.github.eufranio.storage.Persistable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.config.Trigger;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import org.apache.commons.lang3.SerializationUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
@@ -25,11 +28,17 @@ public class SQLStorage implements StorageModule {
 
     private DataSource src;
 
+    private Persistable<PlayerData, UUID> playerData;
+    private Persistable<QuestStatus, Integer> status;
+
     private List<Trigger> triggers = Lists.newArrayList();
 
     @Override
     public void init(PixelBuiltQuests instance) {
         try {
+            this.status = Persistable.create(QuestStatus.class, ConfigManager.getConfig().database.url);
+            this.playerData = Persistable.create(PlayerData.class, ConfigManager.getConfig().database.url);
+
             SqlService service = Sponge.getServiceManager().provideUnchecked(SqlService.class);
             this.src = service.getDataSource(ConfigManager.getConfig().database.url);
 
@@ -74,6 +83,18 @@ public class SQLStorage implements StorageModule {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public PlayerData getData(UUID uuid) {
+        PlayerData data = this.playerData.getOrCreate(uuid);
+        try {
+            data.refresh();
+        } catch (SQLException e) { e.printStackTrace(); }
+        return data;
+    }
+
+    public void save(PlayerData data) {
+        this.playerData.save(data);
     }
 
     @Override

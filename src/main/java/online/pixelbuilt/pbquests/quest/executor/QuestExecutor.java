@@ -9,6 +9,6 @@ import org.spongepowered.api.entity.living.player.Player;
  */
 public interface QuestExecutor {
 
-    void execute(Quest quest, QuestLine questLine, int questId, Player player);
+    void execute(Quest quest, QuestLine questLine, Player player);
 
 }

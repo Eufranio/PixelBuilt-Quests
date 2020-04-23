@@ -1,54 +1,69 @@
 package online.pixelbuilt.pbquests.task.impl;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
+import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
-import online.pixelbuilt.pbquests.task.BaseTask;
-import org.spongepowered.api.Sponge;
+import online.pixelbuilt.pbquests.storage.SQLStorage;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.task.TaskType;
+import online.pixelbuilt.pbquests.task.TaskTypes;
+import online.pixelbuilt.pbquests.task.TriggeredTask;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.Player;
-
-import java.util.Map;
-import java.util.UUID;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
 
 /**
  * Created by Frani on 28/01/2019.
  */
 @ConfigSerializable
-public class KillTask implements BaseTask<KillTask> {
+public class KillTask implements TriggeredTask<DestructEntityEvent.Death> {
 
-    public static Multimap<UUID, EntityType> killed = ArrayListMultimap.create();
+    @Setting
+    public int id;
 
-    @Setting(comment = "checking mode. 1 = killed at least one specific mob, 2 = killed at least X specific mobs, " +
-            "3 = killed at least one mob, 4 = killed at least X mobs")
+    @Setting(comment = "checking mode. 1 = killed at least <count> specific entities, " +
+            "2 = killed at least <count> entities")
     public int checkMode = 1;
 
     @Setting
-    public int mobCount = 5;
+    public int count = 5;
 
     @Setting
     public EntityType mob = EntityTypes.ZOMBIE;
 
     @Override
-    public boolean check(Player player, Quest quest, QuestLine line, int questId) {
-        if (checkMode == 1) {
-            return killed.get(player.getUniqueId()).contains(mob);
-        } else if (checkMode == 2) {
-            return killed.get(player.getUniqueId()).stream().filter(mob::equals).count() >= mobCount;
-        } else if (checkMode == 3) {
-            return !killed.get(player.getUniqueId()).isEmpty();
-        } else if (checkMode == 4) {
-            return killed.get(player.getUniqueId()).size() >= mobCount;
-        }
-        return false;
+    public TaskType getType() {
+        return TaskTypes.KILL;
     }
 
     @Override
-    public void complete(Player player, Quest quest, QuestLine line, int questId) {
-        //
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public int getTotal() {
+        return this.count;
+    }
+
+    @Override
+    public Class<DestructEntityEvent.Death> getEventClass() {
+        return DestructEntityEvent.Death.class;
+    }
+
+    @Override
+    public void handle(QuestLine line, Quest quest, DestructEntityEvent.Death event) {
+        if (event.getCause().root() instanceof Player) {
+            Player root = (Player) event.getCause().root();
+            if ((checkMode == 1 && event.getTargetEntity().getType() == this.mob) || checkMode == 2) {
+                PlayerData data = ((SQLStorage) PixelBuiltQuests.getStorage()).getData(root.getUniqueId());
+                QuestStatus status = data.getStatus(this, line, quest);
+                this.increase(data, status, 1);
+            }
+        }
     }
 }
