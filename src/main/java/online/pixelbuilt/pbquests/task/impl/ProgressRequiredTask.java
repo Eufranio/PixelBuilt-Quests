@@ -21,7 +21,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class ProgressRequiredTask implements BaseTask {
 
     @Setting
-    public int id;
+    public int id = 4;
 
     @Setting(comment = "1 = min, 2 = exact, 3 = max")
     public int progressCheckMode = 3;

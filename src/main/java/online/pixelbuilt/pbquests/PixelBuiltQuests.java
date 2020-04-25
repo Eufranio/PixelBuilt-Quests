@@ -70,14 +70,14 @@ public class PixelBuiltQuests {
 
     @Listener
     public void onStarted(GameStartedServerEvent event) {
+        ConfigManager.init();
+
         this.taskListener = new TaskListener(this);
         this.taskListener.reloadEvents();
         Sponge.getEventManager().registerListeners(this, taskListener);
 
         this.storage = new StorageManager(this);
         this.storage.init();
-
-        ConfigManager.init();
 
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();

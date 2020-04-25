@@ -27,7 +27,7 @@ public class ByteItemTask implements AmountTask {
     public static TaskType TASK_TYPE = new TaskType("byteitem", "ByteItem", ByteItemTask.class);
 
     @Setting
-    public int id;
+    public int id = 6;
 
     @Setting
     public String byteItemId = "byte-items:default";

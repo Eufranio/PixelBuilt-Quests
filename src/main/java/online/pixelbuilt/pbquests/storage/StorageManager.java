@@ -63,7 +63,7 @@ public class StorageManager {
 
     public Tuple<Quest, QuestLine> getQuest(Entity npc) {
         Trigger trigger = this.triggerData.get(npc.getUniqueId());
-        if (trigger == null)
+        if (trigger != null)
             return trigger.getQuest();
         return null;
     }

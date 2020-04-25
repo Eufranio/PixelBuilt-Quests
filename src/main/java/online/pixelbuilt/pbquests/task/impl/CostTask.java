@@ -7,6 +7,8 @@ import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.task.AmountTask;
 import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.TaskTypes;
@@ -28,10 +30,10 @@ import java.math.BigDecimal;
  * Created by Frani on 20/01/2019.
  */
 @ConfigSerializable
-public class CostTask implements BaseTask {
+public class CostTask implements AmountTask {
 
     @Setting
-    public int id = 1;
+    public int id = 0;
 
     @Setting
     private int cost = 0;
@@ -47,14 +49,12 @@ public class CostTask implements BaseTask {
     }
 
     @Override
-    public Text getDisplay() {
-        return Text.of(TextColors.YELLOW, "Cost (", Text.of(TextColors.AQUA, "$" + this.cost), ")");
+    public int getTotal() {
+        return this.cost;
     }
 
     @Override
-    public boolean isCompleted(PlayerData data, QuestLine line, Quest quest) {
-        if (this.cost == 0) return true;
-
+    public void tryIncrease(PlayerData data, QuestStatus status) {
         EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
         if (service == null) {
             PixelBuiltQuests.getInstance().getLogger().error("PBQ needs an economy plugin if quest prices are enabled!");
@@ -63,7 +63,7 @@ public class CostTask implements BaseTask {
                             TextColors.RED, "An error ocurred while checking the requeriments of this quest, contact an staff!")
                     )
             );
-            return false;
+            return;
         }
 
         UniqueAccount account = service.getOrCreateAccount(data.id).get();
@@ -75,9 +75,14 @@ public class CostTask implements BaseTask {
                             .replace("%money%", cost.toString())
                     ))
             );
-            return false;
+            return;
+        } else {
+            this.increase(data, status, this.cost);
         }
+    }
 
-        return true;
+    @Override
+    public Text getDisplay() {
+        return Text.of(TextColors.YELLOW, "Cost (", Text.of(TextColors.AQUA, "$" + this.cost), ")");
     }
 }

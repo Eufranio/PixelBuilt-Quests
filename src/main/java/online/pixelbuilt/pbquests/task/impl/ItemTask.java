@@ -24,7 +24,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class ItemTask implements AmountTask {
 
     @Setting
-    public int id;
+    public int id = 1;
 
     @Setting
     public ItemType item = ItemTypes.STONE;

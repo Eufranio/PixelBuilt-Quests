@@ -20,7 +20,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class PermissionTask implements BaseTask {
 
     @Setting
-    public int id;
+    public int id = 3;
 
     @Setting
     private String permission = "pbq.quest.%line%.%id%";

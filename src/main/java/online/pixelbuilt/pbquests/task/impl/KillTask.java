@@ -26,7 +26,7 @@ import org.spongepowered.api.text.format.TextColors;
 public class KillTask implements TriggeredTask<DestructEntityEvent.Death> {
 
     @Setting
-    public int id;
+    public int id = 2;
 
     @Setting(comment = "checking mode. 1 = killed at least <count> specific entities, " +
             "2 = killed at least <count> entities")

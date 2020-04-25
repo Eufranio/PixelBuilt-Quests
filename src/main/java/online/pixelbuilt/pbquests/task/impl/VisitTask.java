@@ -26,7 +26,7 @@ import org.spongepowered.api.world.World;
 public class VisitTask implements TriggeredTask<MoveEntityEvent> {
 
     @Setting
-    public int id;
+    public int id = 5;
 
     @Setting
     public String visitLocation = "0,0,0,world";
