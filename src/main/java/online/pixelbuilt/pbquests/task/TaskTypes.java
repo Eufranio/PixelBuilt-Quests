@@ -14,8 +14,6 @@ public final class TaskTypes {
 
     public static final TaskType PERMISSION = new TaskType("permission", "Permission", PermissionTask.class);
 
-    public static final TaskType ONE_TIME = new TaskType("one_time_task", "One Time Task", OneTimeTaskReward.class);
-
     public static final TaskType PROGRESS_REQUIRED = new TaskType("progress_required", "Progress Required", ProgressRequiredTask.class);
 
     public static final TaskType ITEM = new TaskType("item", "Item", ItemTask.class);
@@ -28,7 +26,6 @@ public final class TaskTypes {
         return Lists.newArrayList(
                 COST,
                 PERMISSION,
-                ONE_TIME,
                 PROGRESS_REQUIRED,
                 ITEM,
                 KILL,

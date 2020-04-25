@@ -1,7 +1,8 @@
-package online.pixelbuilt.pbquests;
+package online.pixelbuilt.pbquests.listeners;
 
+import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
-import online.pixelbuilt.pbquests.config.Trigger;
+import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.utils.Util;
@@ -37,7 +38,7 @@ public class Listeners {
 
         Location<World> location = to.sub(0, 1, 0);
         Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
-        if (trigger != null && trigger.onWalk && player.hasPermission("pbq.run")) {
+        if (trigger != null && trigger.type == Trigger.Type.WALK && player.hasPermission("pbq.run")) {
             Tuple<Quest, QuestLine> quest = trigger.getQuest();
             if (quest != null) {
                 quest.getFirst().getExecutor().execute(quest.getFirst(), quest.getSecond(), player);

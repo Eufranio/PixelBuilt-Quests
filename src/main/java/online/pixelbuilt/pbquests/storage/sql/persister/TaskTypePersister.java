@@ -26,7 +26,7 @@ public class TaskTypePersister extends StringType {
 
     @Override
     public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) {
-        return sqlArg != null ? Sponge.getRegistry().getType(TaskType.class, (String) sqlArg) : null;
+        return sqlArg != null ? Sponge.getRegistry().getType(TaskType.class, (String) sqlArg).orElse(null) : null;
     }
 
 }

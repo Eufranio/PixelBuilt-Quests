@@ -10,6 +10,8 @@ import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.TaskTypes;
 import online.pixelbuilt.pbquests.utils.Util;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  * Created by Frani on 20/01/2019.
@@ -31,6 +33,11 @@ public class PermissionTask implements BaseTask {
     @Override
     public int getId() {
         return this.id;
+    }
+
+    @Override
+    public Text getDisplay() {
+        return Text.of(TextColors.YELLOW, "Permission");
     }
 
     @Override

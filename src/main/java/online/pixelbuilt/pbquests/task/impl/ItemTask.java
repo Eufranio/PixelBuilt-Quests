@@ -7,10 +7,15 @@ import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.AmountTask;
 import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.TaskTypes;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  * Created by Frani on 20/01/2019.
@@ -43,11 +48,21 @@ public class ItemTask implements AmountTask {
     }
 
     @Override
+    public Text getDisplay() {
+        return Text.of(TextColors.YELLOW, "Item (",
+                Text.of(TextColors.AQUA, amount, "x ", TextActions.showItem(item.getTemplate()), item.getName()),
+                ")"
+        );
+    }
+
+    @Override
     public void tryIncrease(PlayerData data, QuestStatus status) {
         data.getUser().getPlayer().ifPresent(p -> {
             Inventory inv = p.getInventory().query(QueryOperationTypes.ITEM_TYPE.of(item));
             int toRemove = this.getTotal() - status.current;
-            this.increase(data, status, inv.poll(toRemove).get().getQuantity());
+            if (inv.peek(toRemove).isPresent()) {
+                this.increase(data, status, inv.poll(toRemove).get().getQuantity());
+            }
         });
     }
 }

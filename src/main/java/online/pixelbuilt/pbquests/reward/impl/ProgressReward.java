@@ -6,9 +6,8 @@ import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.reward.BaseReward;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import org.spongepowered.api.entity.living.player.Player;
-
-import java.util.Map;
 
 /**
  * Created by Frani on 20/01/2019.
@@ -24,10 +23,12 @@ public class ProgressReward implements BaseReward<ProgressReward> {
 
     @Override
     public void execute(Player player, Quest quest, QuestLine line, int questId) {
+        PlayerData data = PixelBuiltQuests.getStorage().getData(player.getUniqueId());
         if (progressMode == 1) {
-            PixelBuiltQuests.getStorage().setProgress(player.getUniqueId(), line, progressAfter);
+            data.setProgress(line, progressAfter);
         } else if (progressMode == 2) {
-            PixelBuiltQuests.getStorage().addProgress(player.getUniqueId(), line, progressAfter);
+            data.addProgress(line, progressAfter);
         }
+        PixelBuiltQuests.getStorage().save(data);
     }
 }

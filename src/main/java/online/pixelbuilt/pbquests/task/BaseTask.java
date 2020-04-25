@@ -5,6 +5,7 @@ import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
 
 import java.util.Map;
 
@@ -12,6 +13,8 @@ import java.util.Map;
  * Created by Frani on 20/01/2019.
  */
 public interface BaseTask {
+
+    Text getDisplay();
 
     TaskType getType();
 

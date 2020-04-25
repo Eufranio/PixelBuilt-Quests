@@ -2,6 +2,7 @@ package online.pixelbuilt.pbquests.quest.executor;
 
 import com.google.common.collect.Lists;
 import online.pixelbuilt.pbquests.quest.executor.impl.BaseQuestExecutor;
+import online.pixelbuilt.pbquests.quest.executor.impl.TestQuestExecutor;
 
 import java.util.List;
 
@@ -12,8 +13,10 @@ public class QuestExecutorTypes {
 
     public static final QuestExecutorType DEFAULT = new QuestExecutorType("default", "Default", BaseQuestExecutor.class);
 
+    public static final QuestExecutorType TEST = new QuestExecutorType("test", "Test", TestQuestExecutor.class);
+
     public static List<QuestExecutorType> defaults() {
-        return Lists.newArrayList(DEFAULT);
+        return Lists.newArrayList(DEFAULT, TEST);
     }
 
 }

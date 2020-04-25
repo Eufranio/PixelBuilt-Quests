@@ -5,7 +5,7 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
-import online.pixelbuilt.pbquests.storage.SQLStorage;
+import online.pixelbuilt.pbquests.storage.StorageManager;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.TaskType;
@@ -14,6 +14,8 @@ import online.pixelbuilt.pbquests.task.TriggeredTask;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -48,6 +50,12 @@ public class VisitTask implements TriggeredTask<MoveEntityEvent> {
     }
 
     @Override
+    public Text getDisplay() {
+        String[] arr = this.visitLocation.split(",");
+        return Text.of(TextColors.YELLOW, "Visit (", Text.of(TextColors.AQUA, "x=", arr[0], ", y=", arr[1], ", z=", arr[2], ", ", arr[3]), ")");
+    }
+
+    @Override
     public Class<MoveEntityEvent> getEventClass() {
         return MoveEntityEvent.class;
     }
@@ -56,7 +64,8 @@ public class VisitTask implements TriggeredTask<MoveEntityEvent> {
     public void handle(QuestLine line, Quest quest, MoveEntityEvent event) {
         if (event.getCause().root() instanceof Player) {
             Player player = (Player) event.getCause().root();
-            if (player.getWorld().getUniqueId().equals(loc.getExtent().getUniqueId()))
+            Location<World> loc = this.getLocation();
+            if (!player.getWorld().getUniqueId().equals(loc.getExtent().getUniqueId()))
                 return;
 
             Location<World> from = event.getFromTransform().getLocation();
@@ -65,7 +74,7 @@ public class VisitTask implements TriggeredTask<MoveEntityEvent> {
                 return;
 
             if (to.getBlockPosition().distance(loc.getBlockPosition()) <= visitRadius) {
-                PlayerData data = ((SQLStorage) PixelBuiltQuests.getStorage()).getData(player.getUniqueId());
+                PlayerData data = ((StorageManager) PixelBuiltQuests.getStorage()).getData(player.getUniqueId());
                 QuestStatus status = data.getStatus(this, line, quest);
                 this.increase(data, status, 1);
             }

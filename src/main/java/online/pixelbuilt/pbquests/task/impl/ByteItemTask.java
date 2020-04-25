@@ -8,11 +8,15 @@ import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.AmountTask;
 import online.pixelbuilt.pbquests.task.TaskType;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  * Created by Frani on 31/12/2019.
@@ -44,6 +48,17 @@ public class ByteItemTask implements AmountTask {
     @Override
     public int getTotal() {
         return this.amount;
+    }
+
+    @Override
+    public Text getDisplay() {
+        ItemStackSnapshot item = getItem(byteItemId);
+        return Text.of(TextColors.YELLOW, "ByteItem ",
+                "(",
+                TextColors.AQUA, TextActions.showItem(item), item.get(Keys.DISPLAY_NAME).orElse(Text.of(item.getType().getName())),
+                TextColors.YELLOW,
+                ")"
+        );
     }
 
     @Override

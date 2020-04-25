@@ -11,6 +11,8 @@ import online.pixelbuilt.pbquests.task.BaseTask;
 import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.TaskTypes;
 import online.pixelbuilt.pbquests.utils.Util;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 /**
  * Created by Frani on 20/01/2019.
@@ -41,8 +43,25 @@ public class ProgressRequiredTask implements BaseTask {
     }
 
     @Override
+    public Text getDisplay() {
+        String progress = "";
+        switch (progressCheckMode) {
+            case 1:
+                progress = "Min";
+                break;
+            case 2:
+                progress = "Exact";
+                break;
+            case 3:
+                progress = "Max";
+                break;
+        }
+        return Text.of(TextColors.YELLOW, "Progress (", Text.of(TextColors.AQUA, progress, " ", this.progressRequired), ")");
+    }
+
+    @Override
     public boolean isCompleted(PlayerData data, QuestLine line, Quest quest) {
-        int playerProgress = PixelBuiltQuests.getStorage().getProgress(data.id, line);
+        int playerProgress = data.getProgress(line);
         switch (progressCheckMode) {
             case 1:
                 if (playerProgress < progressRequired) {

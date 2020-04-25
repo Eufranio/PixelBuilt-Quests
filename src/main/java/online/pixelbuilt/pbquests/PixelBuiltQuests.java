@@ -6,14 +6,13 @@ import com.google.inject.Inject;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.config.serialization.ValueWrapper;
+import online.pixelbuilt.pbquests.listeners.Listeners;
 import online.pixelbuilt.pbquests.listeners.TaskListener;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorType;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorTypeRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardType;
-import online.pixelbuilt.pbquests.storage.FileStorage;
-import online.pixelbuilt.pbquests.storage.SQLStorage;
-import online.pixelbuilt.pbquests.storage.StorageModule;
+import online.pixelbuilt.pbquests.storage.StorageManager;
 import online.pixelbuilt.pbquests.task.TaskRegistryModule;
 import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.impl.ByteItemTask;
@@ -47,7 +46,7 @@ public class PixelBuiltQuests {
     public static List<UUID> playersBusy = Lists.newArrayList();
     public static List<UUID> runningQuests = Lists.newArrayList();
 
-    private StorageModule storage;
+    private StorageManager storage;
 
     @Inject
     @ConfigDir(sharedRoot = false)
@@ -61,7 +60,6 @@ public class PixelBuiltQuests {
     @Listener
     public void onPreInit(GamePreInitializationEvent e) {
         instance = this;
-        this.taskListener = new TaskListener(this);
 
         Sponge.getRegistry().registerModule(TaskType.class, new TaskRegistryModule());
         Sponge.getRegistry().registerModule(RewardType.class, new RewardRegistryModule());
@@ -72,8 +70,14 @@ public class PixelBuiltQuests {
 
     @Listener
     public void onStarted(GameStartedServerEvent event) {
+        this.taskListener = new TaskListener(this);
+        this.taskListener.reloadEvents();
+        Sponge.getEventManager().registerListeners(this, taskListener);
+
+        this.storage = new StorageManager(this);
+        this.storage.init();
+
         ConfigManager.init();
-        this.initStorage();
 
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
@@ -95,27 +99,10 @@ public class PixelBuiltQuests {
     @Listener
     public void onReload(GameReloadEvent e) {
         ConfigManager.reload();
-        this.storage.shutdown();
-        this.initStorage();
         this.taskListener.reloadEvents();
     }
 
-    private void initStorage() {
-        switch (ConfigManager.getConfig().storage) {
-            case 1:
-                this.storage = new FileStorage();
-                break;
-            case 2:
-                this.storage = new SQLStorage();
-                break;
-            default:
-                this.storage = new FileStorage();
-        }
-
-        this.storage.init(this);
-    }
-
-    public static StorageModule getStorage() {
+    public static StorageManager getStorage() {
         return instance.storage;
     }
 

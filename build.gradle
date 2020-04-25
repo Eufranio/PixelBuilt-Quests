@@ -7,9 +7,9 @@ group = pluginGroup
 version = pluginVersion
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
+    compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
     compileOnly files('PBQMessages-1.0.jar')
-    compile 'com.github.randombyte-developer:byte-items:v2.4.1'
+    compileOnly 'com.github.randombyte-developer:byte-items:v2.4.1'
     shadow 'com.github.Eufranio:StorageUtils:2.2'
 }
 

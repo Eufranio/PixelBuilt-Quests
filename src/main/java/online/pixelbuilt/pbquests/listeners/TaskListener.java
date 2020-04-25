@@ -22,7 +22,7 @@ public class TaskListener {
     @Listener
     public void onEvent(Event event) {
         eventsToListen.asMap().forEach((clazz, list) -> {
-            if (event.getClass().isAssignableFrom(clazz)) {
+            if (clazz.isAssignableFrom(event.getClass())) {
                 list.forEach(holder -> holder.task.handle(holder.line, holder.quest, event));
             }
         });

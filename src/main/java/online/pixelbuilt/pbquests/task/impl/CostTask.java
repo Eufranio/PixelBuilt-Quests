@@ -12,11 +12,14 @@ import online.pixelbuilt.pbquests.task.TaskType;
 import online.pixelbuilt.pbquests.task.TaskTypes;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.service.economy.transaction.ResultType;
 import org.spongepowered.api.service.economy.transaction.TransactionResult;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.math.BigDecimal;
@@ -41,6 +44,11 @@ public class CostTask implements BaseTask {
     @Override
     public TaskType getType() {
         return TaskTypes.COST;
+    }
+
+    @Override
+    public Text getDisplay() {
+        return Text.of(TextColors.YELLOW, "Cost (", Text.of(TextColors.AQUA, "$" + this.cost), ")");
     }
 
     @Override
