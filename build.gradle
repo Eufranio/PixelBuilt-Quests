@@ -3,6 +3,9 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
+apply plugin: 'java-library'
+apply plugin: 'maven'
+
 group = pluginGroup
 version = pluginVersion
 
@@ -10,7 +13,7 @@ dependencies {
     compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
     compileOnly files('PBQMessages-1.0.jar')
     compileOnly 'com.github.randombyte-developer:byte-items:v2.4.1'
-    shadow 'com.github.Eufranio:StorageUtils:2.2'
+    api 'com.github.Eufranio:StorageUtils:2.2'
 }
 
 repositories {
@@ -19,15 +22,32 @@ repositories {
 }
 
 configurations {
-    compile.extendsFrom shadow
+    shadow.extendsFrom api
 }
 
 shadowJar {
-    configurations = [project.configurations.shadow]
-
-    classifier = null
+    project.configurations.api.canBeResolved = true
+    configurations = [project.configurations.api]
     from sourceSets.main.output
 }
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives shadowJar
+}
+
+build.dependsOn shadowJar
 
 sponge.plugin.id = pluginId
 

@@ -1,14 +1,7 @@
 package online.pixelbuilt.pbquests.config;
 
-import com.google.common.collect.Lists;
-import javafx.util.Pair;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import online.pixelbuilt.pbquests.quest.Quest;
-import online.pixelbuilt.pbquests.quest.QuestLine;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by Frani on 16/12/2017.

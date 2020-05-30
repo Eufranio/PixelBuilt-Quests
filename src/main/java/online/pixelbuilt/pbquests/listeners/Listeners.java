@@ -2,9 +2,9 @@ package online.pixelbuilt.pbquests.listeners;
 
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
-import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
