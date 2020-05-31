@@ -93,7 +93,10 @@ public class CommandManager {
                 .arguments(
                         QuestLineElement.create(Text.of("quest line")),
                         QuestElement.create(Text.of("quest")),
-                        GenericArguments.enumValue(Text.of("type"), Trigger.Type.class)
+                        GenericArguments.enumValue(Text.of("type"), Trigger.Type.class),
+                        GenericArguments.optional(
+                                GenericArguments.bool(Text.of("cancel action"))
+                        )
                 )
                 .executor(new AddQuest())
                 .build();
@@ -113,6 +116,21 @@ public class CommandManager {
         CommandSpec status = CommandSpec.builder()
                 .permission("pbq.command.status")
                 .executor(new Status())
+                .build();
+
+        CommandSpec run = CommandSpec.builder()
+                .permission("pbq.command.run.own")
+                .arguments(
+                        QuestLineElement.create(Text.of("quest line")),
+                        QuestElement.create(Text.of("quest")),
+                        GenericArguments.optional(
+                                GenericArguments.requiringPermission(
+                                        GenericArguments.player(Text.of("player")),
+                                        "pbq.command.run.others"
+                                )
+                        )
+                )
+                .executor(new Run())
                 .build();
 
         CommandSpec main = CommandSpec.builder()
@@ -145,6 +163,7 @@ public class CommandManager {
                 .child(addQuest, "addQuest")
                 .child(delete, "delete")
                 .child(rename, "rename")
+                .child(run, "run")
                 .build();
         Sponge.getCommandManager().register(PixelBuiltQuests.instance, main, "pbq", "pbquests");
     }

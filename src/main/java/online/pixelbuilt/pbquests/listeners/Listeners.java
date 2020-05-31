@@ -10,10 +10,13 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
+import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
+import org.spongepowered.api.event.filter.type.Exclude;
+import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -23,25 +26,30 @@ import org.spongepowered.api.world.World;
  */
 public class Listeners {
 
+    PixelBuiltQuests plugin;
+    public Listeners(PixelBuiltQuests plugin) {
+        this.plugin = plugin;
+    }
+
     @Listener
     public void onMove(MoveEntityEvent event, @Getter("getTargetEntity") Player player) {
-        if (PixelBuiltQuests.playersBusy.contains(player.getUniqueId())) {
+        if (plugin.playersBusy.contains(player.getUniqueId())) {
             event.setCancelled(true);
             return;
         }
 
-        if (PixelBuiltQuests.runningQuests.contains(player.getUniqueId())) return;
+        if (plugin.runningQuests.contains(player.getUniqueId())) return;
 
         Location<World> from = event.getFromTransform().getLocation();
         Location<World> to = event.getToTransform().getLocation();
         if (from.getBlockPosition().equals(to.getBlockPosition())) return;
 
         Location<World> location = to.sub(0, 1, 0);
-        Trigger trigger = PixelBuiltQuests.getStorage().getTriggerAt(location);
+        Trigger trigger = plugin.getStorage().getTriggerAt(location);
         if (trigger != null && trigger.type == Trigger.Type.WALK && player.hasPermission("pbq.run")) {
-            Tuple<Quest, QuestLine> quest = trigger.getQuest();
+            Quest quest = trigger.getQuest();
             if (quest != null) {
-                quest.getFirst().getExecutor().execute(quest.getFirst(), quest.getSecond(), player);
+                quest.getExecutor().execute(quest, trigger.getQuestLine(), player);
             } else {
                 if (player.hasPermission("pbq.admin")) {
                     player.sendMessage(Util.toText(ConfigManager.getConfig().messages.noQuest));
@@ -50,16 +58,33 @@ public class Listeners {
         }
     }
 
-    @Listener(order = Order.FIRST, beforeModifications = true)
+    @Listener(order = Order.EARLY, beforeModifications = true)
     public void onInteractEntitySecondary(InteractEntityEvent.Secondary.MainHand event, @Root Player p) {
-        if (PixelBuiltQuests.runningQuests.contains(p.getUniqueId()))
+        if (plugin.runningQuests.contains(p.getUniqueId()))
             return;
 
         Entity npc = event.getTargetEntity();
-        Tuple<Quest, QuestLine> info = PixelBuiltQuests.getStorage().getQuest(npc);
-        if (info != null && p.hasPermission("pbq.run")) {
-            event.setCancelled(true);
-            info.getFirst().getExecutor().execute(info.getFirst(), info.getSecond(), p);
+        Trigger trigger = plugin.getStorage().getTrigger(npc);
+        if (trigger != null && p.hasPermission("pbq.run")) {
+            event.setCancelled(trigger.cancelOriginalAction);
+            trigger.getQuest().getExecutor().execute(trigger.getQuest(), trigger.getQuestLine(), p);
+        }
+    }
+
+    @Listener(order = Order.EARLY, beforeModifications = true)
+    @Include({InteractBlockEvent.Primary.MainHand.class, InteractBlockEvent.Secondary.MainHand.class})
+    public void onInteractBlock(InteractBlockEvent event, @Root Player player) {
+        if (plugin.runningQuests.contains(player.getUniqueId()))
+            return;
+
+        Trigger trigger = plugin.getStorage().getTriggerAt(event.getTargetBlock().getLocation().get());
+        if (trigger != null &&
+                (trigger.type == Trigger.Type.CLICK ||
+                (trigger.type == Trigger.Type.RIGHT_CLICK && event instanceof InteractBlockEvent.Secondary) ||
+                (trigger.type == Trigger.Type.LEFT_CLICK && event instanceof InteractBlockEvent.Primary))) {
+
+            event.setCancelled(trigger.cancelOriginalAction);
+            trigger.getQuest().getExecutor().execute(trigger.getQuest(), trigger.getQuestLine(), player);
         }
     }
 }

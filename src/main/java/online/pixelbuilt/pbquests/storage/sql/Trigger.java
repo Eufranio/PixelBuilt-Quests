@@ -36,23 +36,33 @@ public class Trigger extends BaseDaoEnabled<Trigger, UUID> {
     @DatabaseField(persisterClass = LocationPersister.class)
     public Location<World> location;
 
-    public Trigger(Location<World> loc, Quest quest, QuestLine line, Type type, UUID npc) {
+    @DatabaseField
+    public boolean cancelOriginalAction = true;
+
+    public Trigger(Location<World> loc, Quest quest, QuestLine line, Type type, UUID npc, boolean cancelOriginalAction) {
         this.location = loc;
         this.line = line.getName();
         this.questId = quest.getId();
         this.type = type;
         this.npc = npc == null ? UUID.randomUUID() : npc;
+        this.cancelOriginalAction = cancelOriginalAction;
     }
 
-    public Tuple<Quest, QuestLine> getQuest() {
-        return new Tuple<>(ConfigManager.getQuest(this.questId), ConfigManager.getLine(this.line));
+    public Quest getQuest() {
+        return ConfigManager.getQuest(this.questId);
+    }
+
+    public QuestLine getQuestLine() {
+        return ConfigManager.getLine(this.line);
     }
 
     public enum Type {
 
         WALK,
         CLICK,
-        NPC;
+        RIGHT_CLICK,
+        LEFT_CLICK,
+        NPC
 
     }
 

@@ -55,13 +55,14 @@ public class Delete extends BaseCommand {
 
             Sponge.getEventManager().registerListeners(PixelBuiltQuests.instance, new OneTimeHandler((e, player) -> {
                 if (player.getUniqueId().equals(p.getUniqueId())) {
-                    Tuple<Quest, QuestLine> quest = storageManager.getQuest(e.getTargetEntity());
-                    if (quest == null) {
+                    Trigger trigger = storageManager.getTrigger(e.getTargetEntity());
+                    if (trigger == null) {
                         player.sendMessage(Text.of(
-                                TextColors.GREEN, "There's no quest associated with this NPC!"
+                                TextColors.GREEN, "There's no trigger associated with this NPC!"
                         ));
                     } else {
                         storageManager.removeNPC(e.getTargetEntity());
+                        e.getTargetEntity().remove();
                         player.sendMessage(Text.of(
                                 TextColors.GREEN, "Successfully removed quest from this entity!"
                         ));

@@ -60,15 +60,12 @@ public class StorageManager {
         this.playerData.save(data);
     }
 
-    public Tuple<Quest, QuestLine> getQuest(Entity npc) {
-        Trigger trigger = this.triggerData.get(npc.getUniqueId());
-        if (trigger != null)
-            return trigger.getQuest();
-        return null;
+    public Trigger getTrigger(Entity npc) {
+        return this.triggerData.get(npc.getUniqueId());
     }
 
-    public void addNPC(Entity npc, QuestLine line, Quest quest) {
-        addTrigger(new Trigger(npc.getLocation(), quest, line, Trigger.Type.NPC, npc.getUniqueId()));
+    public void addNPC(Entity npc, QuestLine line, Quest quest, boolean cancelOriginalAction) {
+        addTrigger(new Trigger(npc.getLocation(), quest, line, Trigger.Type.NPC, npc.getUniqueId(), cancelOriginalAction));
     }
 
     public void removeNPC(Entity npc) {

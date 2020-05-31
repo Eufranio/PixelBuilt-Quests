@@ -28,6 +28,7 @@ public class AddQuest extends BaseCommand {
         Quest quest = args.requireOne("quest");
         QuestLine line = args.requireOne("quest line");
         Trigger.Type type = args.requireOne("type");
+        boolean cancelOriginalAction = args.<Boolean>getOne("cancel action").orElse(true);
 
         if (type == Trigger.Type.NPC) {
             src.sendMessage(Text.of(
@@ -36,7 +37,7 @@ public class AddQuest extends BaseCommand {
 
             Sponge.getEventManager().registerListeners(PixelBuiltQuests.instance, new OneTimeHandler((e, player) -> {
                 if (player.getUniqueId().equals(p.getUniqueId())) {
-                    storageManager.addNPC(e.getTargetEntity(), line, quest);
+                    storageManager.addNPC(e.getTargetEntity(), line, quest, cancelOriginalAction);
                     src.sendMessage(Text.of(
                             TextColors.GREEN, "Successfully added NPC!"
                     ));
@@ -44,7 +45,7 @@ public class AddQuest extends BaseCommand {
             }));
         } else {
             Location<World> loc = p.getLocation().sub(0, 1, 0);
-            Trigger trigger = new Trigger(loc, quest, line, type, null);
+            Trigger trigger = new Trigger(loc, quest, line, type, null, cancelOriginalAction);
             storageManager.addTrigger(trigger);
             src.sendMessage(Text.of(
                     TextColors.GREEN, "Successfully added trigger at ", Util.locationToText(trigger.location)

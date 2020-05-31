@@ -81,7 +81,7 @@ public class PixelBuiltQuests {
 
         logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
-        Sponge.getEventManager().registerListeners(this, new Listeners());
+        Sponge.getEventManager().registerListeners(this, new Listeners(this));
     }
 
     @Listener
