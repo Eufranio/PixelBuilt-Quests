@@ -24,7 +24,6 @@ import java.util.UUID;
  */
 public class StorageManager {
 
-    private DataSource src;
     private PixelBuiltQuests plugin;
 
     private Persistable<PlayerData, UUID> playerData;

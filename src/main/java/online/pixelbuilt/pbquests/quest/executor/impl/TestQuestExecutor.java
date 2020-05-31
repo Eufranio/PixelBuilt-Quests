@@ -23,6 +23,7 @@ import org.spongepowered.api.text.format.TextColors;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestQuestExecutor implements QuestExecutor {
 
@@ -49,10 +50,9 @@ public class TestQuestExecutor implements QuestExecutor {
 
         if (!playerData.startedQuests.contains(this.questLine.getName() + "," + this.quest.getId())) {
             playerData.startedQuests.add(this.questLine.getName() + "," + this.quest.getId());
-            ((StorageManager) PixelBuiltQuests.getStorage()).save(playerData);
+            PixelBuiltQuests.getStorage().save(playerData);
         }
 
-        boolean canComplete = true;
         List<Text> toComplete = Lists.newArrayList();
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
@@ -72,7 +72,7 @@ public class TestQuestExecutor implements QuestExecutor {
             ));
             player.sendMessage(Text.of(
                     TextColors.AQUA, "Hint: ",
-                    TextColors.RED, "Use /pbq status to check your current status on those tasks!"
+                    TextColors.GRAY, "Use /pbq status to check your current status on those tasks!"
             ));
             return;
         }
@@ -91,51 +91,53 @@ public class TestQuestExecutor implements QuestExecutor {
             }
             this.continueTask();
         } else {
-            int count = 0;
-            if (quest.messages.isEmpty()) continueTask();
-            for (String msg : quest.messages) {
-                count += quest.timeBetweenMessages;
-                final int currentCount = count;
-                Task.builder()
-                        .delay(count, TimeUnit.SECONDS)
-                        .execute(() -> {
-                            Player pl = this.getPlayer();
-                            if (pl != null) {
-                                pl.sendMessage(Util.toText(msg.replace("%player%", pl.getName())));
-                            }
-                            if (currentCount == quest.messages.size()) {
-                                Task.builder()
-                                        .delay(quest.timeBetweenMessages, TimeUnit.SECONDS)
-                                        .execute(this::continueTask)
-                                        .submit(PixelBuiltQuests.instance);
-                            }
-                        })
-                        .submit(PixelBuiltQuests.instance);
+            if (quest.messages.isEmpty()) {
+                this.continueTask();
+            } else {
+                AtomicInteger count = new AtomicInteger();
+                for (int i = 0; i < quest.messages.size(); i++) {
+                    final int j = i;
+                    Task.builder()
+                            .delay(count.getAndAdd(quest.timeBetweenMessages), TimeUnit.SECONDS)
+                            .execute(() -> {
+                                Player pl = this.getPlayer();
+                                if (pl != null) {
+                                    pl.sendMessage(Util.toText(quest.messages.get(j).replace("%player%", pl.getName())));
+                                }
+                                if (j == quest.messages.size() - 1) {
+                                    Task.builder()
+                                            .delay(quest.timeBetweenMessages, TimeUnit.SECONDS)
+                                            .execute(this::continueTask)
+                                            .submit(PixelBuiltQuests.instance);
+                                }
+                            })
+                            .submit(PixelBuiltQuests.instance);
+                }
             }
         }
     }
 
     public void continueTask() {
+        // those don't need the player online to execute
+        PixelBuiltQuests.playersBusy.remove(player);
+        PixelBuiltQuests.runningQuests.remove(player);
+
         Player player = this.getPlayer();
         if (player == null) return;
 
-        PlayerData playerData = ((StorageManager) PixelBuiltQuests.getStorage()).getData(this.player);
-
-        if (quest.denyMovement) {
-            PixelBuiltQuests.playersBusy.remove(player.getUniqueId());
-        }
-        PixelBuiltQuests.runningQuests.remove(player.getUniqueId());
+        PlayerData playerData = PixelBuiltQuests.getStorage().getData(this.player);
 
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
             QuestStatus status = playerData.getStatus(task, questLine, quest);
             if (status != null) {
                 playerData.status.remove(status);
+                // clear the previous progress of this quest, so it can be restarted
             }
         }
 
-        for (ValueWrapper<? extends BaseReward> v : this.quest.rewards) {
-            BaseReward reward = v.getValue();
+        for (ValueWrapper<? extends BaseReward<?>> v : this.quest.rewards) {
+            BaseReward<?> reward = v.getValue();
             reward.execute(player, quest, questLine, quest.getId());
         }
 
