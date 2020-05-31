@@ -133,6 +133,11 @@ public class CommandManager {
                 .executor(new Run())
                 .build();
 
+        CommandSpec triggers = CommandSpec.builder()
+                .permission("pbq.command.triggers")
+                .executor(new Triggers())
+                .build();
+
         CommandSpec main = CommandSpec.builder()
                 .permission("pbq.command.main")
                 .executor((sender, context) -> {
@@ -142,9 +147,11 @@ public class CommandManager {
                             cmd("pbq checkProgress [<player>] <quest line>", "Checks the progress of the player in the specific quest line"),
                             cmd("pbq spawn <type>", "Spawns an NPC of the specified type. Use minecraft:villager if not sure"),
                             cmd("pbq resetOneTime <quest line> [<player>]", "Resets the status of the one time quests of the player in the specified quest line"),
-                            cmd("pbq addQuest <quest id> <quest line> <type>", "Adds a quest to a block/entity. The type can be walk, click or npc"),
+                            cmd("pbq addQuest <quest line> <quest id> <type> [<cancel event>]", "Adds a quest to a block/entity. The type can be walk, click or npc"),
                             cmd("pbq delete <block/npc>", "Deletes the quest of the target block/entity"),
-                            cmd("pbq rename <name>", "Renames the next clicked entity to the specified name")
+                            cmd("pbq rename <name>", "Renames the next clicked entity to the specified name"),
+                            cmd("pbq run <quest line> <quest id> [<player>]", "Runs/triggers the specified quest for you or the specified player"),
+                            cmd("pbq triggers", "Shows a list of all stored triggers")
                     );
 
                     PaginationList.builder()
@@ -164,6 +171,7 @@ public class CommandManager {
                 .child(delete, "delete")
                 .child(rename, "rename")
                 .child(run, "run")
+                .child(triggers, "triggers")
                 .build();
         Sponge.getCommandManager().register(PixelBuiltQuests.instance, main, "pbq", "pbquests");
     }

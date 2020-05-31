@@ -3,7 +3,6 @@ package online.pixelbuilt.pbquests.listeners;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
-import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.Entity;
@@ -15,9 +14,7 @@ import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.filter.cause.Root;
-import org.spongepowered.api.event.filter.type.Exclude;
 import org.spongepowered.api.event.filter.type.Include;
-import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -75,6 +72,9 @@ public class Listeners {
     @Include({InteractBlockEvent.Primary.MainHand.class, InteractBlockEvent.Secondary.MainHand.class})
     public void onInteractBlock(InteractBlockEvent event, @Root Player player) {
         if (plugin.runningQuests.contains(player.getUniqueId()))
+            return;
+
+        if (!event.getTargetBlock().getLocation().isPresent())
             return;
 
         Trigger trigger = plugin.getStorage().getTriggerAt(event.getTargetBlock().getLocation().get());

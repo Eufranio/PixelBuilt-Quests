@@ -1,20 +1,19 @@
 package online.pixelbuilt.pbquests.storage;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.github.eufranio.storage.Persistable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
-import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.storage.sql.Trigger;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
@@ -58,6 +57,10 @@ public class StorageManager {
 
     public void save(PlayerData data) {
         this.playerData.save(data);
+    }
+
+    public Map<UUID, Trigger> getTriggers() {
+        return ImmutableMap.copyOf(this.triggers);
     }
 
     public Trigger getTrigger(Entity npc) {
