@@ -9,9 +9,6 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 @ConfigSerializable
 public class ConfigCategory {
 
-    @Setting(comment = "The storage system you want to use. 1 = flatfile, 2 = SQL (must fill the database fields). Defaults to flatfile")
-    public int storage = 2;
-
     @Setting
     public Messages messages = new Messages();
 
