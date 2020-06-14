@@ -18,8 +18,12 @@ public interface AmountTask extends BaseTask {
 
     default void increase(PlayerData data, QuestStatus status, int amount) {
         status.current += amount;
-        if (status.current > getTotal())
+        if (status.current > getTotal()) {
             status.current = getTotal();
+            status.onUpdate();
+            return;
+        }
+
         status.onUpdate();
         data.getUser().getPlayer().ifPresent(p -> {
             final Text notifyMessage = this.getNotifyMessage(data, status);

@@ -5,7 +5,6 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
-import online.pixelbuilt.pbquests.storage.StorageManager;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.TaskType;
@@ -69,9 +68,11 @@ public class KillTask implements TriggeredTask<DestructEntityEvent.Death> {
             EntityDamageSource root = (EntityDamageSource) event.getCause().root();
             if (root.getSource() instanceof Player) {
                 if ((checkMode == 1 && event.getTargetEntity().getType() == this.mob) || checkMode == 2) {
-                    PlayerData data = ((StorageManager) PixelBuiltQuests.getStorage()).getData(root.getSource().getUniqueId());
-                    QuestStatus status = data.getStatus(this, line, quest);
-                    this.increase(data, status, 1);
+                    PlayerData data = PixelBuiltQuests.getStorage().getData(root.getSource().getUniqueId());
+                    if (!this.isCompleted(data, line, quest)) {
+                        QuestStatus status = data.getStatus(this, line, quest);
+                        this.increase(data, status, 1);
+                    }
                 }
             }
         }

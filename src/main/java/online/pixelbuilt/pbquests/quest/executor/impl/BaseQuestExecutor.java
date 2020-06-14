@@ -82,11 +82,13 @@ public class BaseQuestExecutor implements QuestExecutor {
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
             QuestStatus status = playerData.getStatus(task, questLine, quest);
-            if (task instanceof AmountTask)
-                ((AmountTask) task).tryIncrease(playerData, status);
 
             if (!task.isCompleted(playerData, questLine, quest)) {
-                toComplete.add(task.getDisplay());
+                if (task instanceof AmountTask)
+                    ((AmountTask) task).tryIncrease(playerData, status);
+
+                if (!task.isCompleted(playerData, questLine, quest))
+                    toComplete.add(task.getDisplay());
             }
         }
 

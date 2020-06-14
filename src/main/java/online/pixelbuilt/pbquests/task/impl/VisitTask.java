@@ -5,7 +5,6 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
-import online.pixelbuilt.pbquests.storage.StorageManager;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.TaskType;
@@ -74,9 +73,11 @@ public class VisitTask implements TriggeredTask<MoveEntityEvent> {
                 return;
 
             if (to.getBlockPosition().distance(loc.getBlockPosition()) <= visitRadius) {
-                PlayerData data = ((StorageManager) PixelBuiltQuests.getStorage()).getData(player.getUniqueId());
-                QuestStatus status = data.getStatus(this, line, quest);
-                this.increase(data, status, 1);
+                PlayerData data = PixelBuiltQuests.getStorage().getData(player.getUniqueId());
+                if (!this.isCompleted(data, line, quest)) {
+                    QuestStatus status = data.getStatus(this, line, quest);
+                    this.increase(data, status, 1);
+                }
             }
         }
     }
