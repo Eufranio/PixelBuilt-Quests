@@ -1,9 +1,13 @@
 package online.pixelbuilt.pbquests.task;
 
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
+import online.pixelbuilt.pbquests.utils.Util;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.chat.ChatType;
 
 public interface AmountTask extends BaseTask {
 
@@ -17,6 +21,13 @@ public interface AmountTask extends BaseTask {
         if (status.current > getTotal())
             status.current = getTotal();
         status.onUpdate();
+        data.getUser().getPlayer().ifPresent(p -> {
+            final Text notifyMessage = this.getNotifyMessage(data, status);
+            if (!notifyMessage.isEmpty()) {
+                ChatType type = ConfigManager.getConfig().taskNotifyChatType;
+                p.sendMessage(type, this.getNotifyMessage(data, status));
+            }
+        });
     }
 
     default int getPercentageCompleted(QuestStatus status) {
@@ -29,4 +40,18 @@ public interface AmountTask extends BaseTask {
     default boolean isCompleted(PlayerData data, QuestLine line, Quest quest) {
         return data.getProgress(this, line, quest) >= this.getTotal();
     }
+
+    default Text getNotifyMessage(PlayerData data, QuestStatus status) {
+        if (ConfigManager.getConfig().messages.taskNotifyMessage.isEmpty())
+            return Text.EMPTY;
+        return Util.toText(
+                ConfigManager.getConfig().messages.taskNotifyMessage
+                    .replace("%display%", Util.fromText(this.getDisplay()))
+                    .replace("%task%", this.getType().getName())
+                    .replace("%current%", status.current + "")
+                    .replace("%total%", this.getTotal() + "")
+                    .replace("%percentage%", this.getPercentageCompleted(status) + "")
+        );
+    }
+
 }

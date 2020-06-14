@@ -2,6 +2,8 @@ package online.pixelbuilt.pbquests.config;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
+import org.spongepowered.api.text.chat.ChatType;
+import org.spongepowered.api.text.chat.ChatTypes;
 
 /**
  * Created by Frani on 16/12/2017.
@@ -9,11 +11,18 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 @ConfigSerializable
 public class ConfigCategory {
 
+    @Setting(comment = "the default chat type used when sending task notify messages, can be either action_bar or chat. " +
+            "can be overriden on tasks.")
+    public ChatType taskNotifyChatType = ChatTypes.ACTION_BAR;
+
     @Setting
     public Messages messages = new Messages();
 
     @ConfigSerializable
     public static class Messages {
+
+        @Setting(comment = "supports %display%, %task%, %current%, %total% and %percentage%")
+        public String taskNotifyMessage = "&aIncreasing %display% &7- &a%current%/%total% &7- &d%percentage%% Completed";
 
         @Setting
         public String noQuest = "&c There is no Quest with this quest line/id!";

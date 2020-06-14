@@ -11,6 +11,10 @@ import org.spongepowered.api.world.World;
  */
 public class Util {
 
+    public static String fromText(Text text) {
+        return TextSerializers.FORMATTING_CODE.serialize(text);
+    }
+
     public static Text toText(String s) {
         return TextSerializers.FORMATTING_CODE.deserialize(s);
     }
