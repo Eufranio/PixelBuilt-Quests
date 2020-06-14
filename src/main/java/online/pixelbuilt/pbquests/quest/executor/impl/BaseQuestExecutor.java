@@ -8,7 +8,6 @@ import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutor;
 import online.pixelbuilt.pbquests.reward.BaseReward;
-import online.pixelbuilt.pbquests.storage.StorageManager;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.AmountTask;
@@ -27,32 +26,40 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BaseQuestExecutor implements QuestExecutor {
 
-    private Quest quest;
-    private QuestLine questLine;
-    private UUID player;
+    Quest quest;
+    QuestLine questLine;
+    UUID player;
+    PlayerData playerData;
 
     @Override
     public void execute(Quest quest, QuestLine questLine, Player player) {
         this.quest = quest;
         this.questLine = questLine;
         this.player = player.getUniqueId();
-        this.run();
+        this.playerData = PixelBuiltQuests.getStorage().getData(this.player);
+
+        if (playerData.hasStarted(questLine, quest)) {
+            this.run();
+        } else {
+            this.start();
+            if (quest.runUponStart)
+                this.run();
+        }
     }
 
-    public void run() {
+    public void start() {
         Player player = this.getPlayer();
-        PlayerData playerData = PixelBuiltQuests.getStorage().getData(this.player);
-
         if (!quest.repeatable && playerData.hasRan(questLine, quest)) {
             player.sendMessage(Util.toText(ConfigManager.getConfig().messages.hasRan));
             return;
         }
 
-        if (!playerData.startedQuests.contains(this.questLine.getName() + "," + this.quest.getId())) {
-            playerData.startedQuests.add(this.questLine.getName() + "," + this.quest.getId());
-            PixelBuiltQuests.getStorage().save(playerData);
-        }
+        quest.startMessages.forEach(str -> player.sendMessage(Util.toText(str.replace("%player%", player.getName()))));
+        playerData.startQuest(questLine, quest);
+        PixelBuiltQuests.getStorage().save(playerData);
+    }
 
+    public void run() {
         List<Text> toComplete = Lists.newArrayList();
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
@@ -65,6 +72,7 @@ public class BaseQuestExecutor implements QuestExecutor {
             }
         }
 
+        final Player player = this.getPlayer();
         if (!toComplete.isEmpty()) {
             player.sendMessage(Text.of(
                     TextColors.RED, "There are tasks that you haven't completed yet for this Quest: ",
@@ -85,34 +93,28 @@ public class BaseQuestExecutor implements QuestExecutor {
                 PixelBuiltQuests.playersBusy.add(player.getUniqueId());
         }
 
-        if (quest.timeBetweenMessages == 0) {
-            for (String s : quest.messages) {
-                player.sendMessage(Util.toText(s.replace("%player%", player.getName())));
-            }
+        if (quest.timeBetweenMessages == 0 || quest.messages.isEmpty()) {
+            quest.messages.forEach(str -> player.sendMessage(Util.toText(str.replace("%player%", player.getName()))));
             this.continueTask();
         } else {
-            if (quest.messages.isEmpty()) {
-                this.continueTask();
-            } else {
-                AtomicInteger count = new AtomicInteger();
-                for (int i = 0; i < quest.messages.size(); i++) {
-                    final int j = i;
-                    Task.builder()
-                            .delay(count.getAndAdd(quest.timeBetweenMessages), TimeUnit.SECONDS)
-                            .execute(() -> {
-                                Player pl = this.getPlayer();
-                                if (pl != null) {
-                                    pl.sendMessage(Util.toText(quest.messages.get(j).replace("%player%", pl.getName())));
-                                }
-                                if (j == quest.messages.size() - 1) {
-                                    Task.builder()
-                                            .delay(quest.timeBetweenMessages, TimeUnit.SECONDS)
-                                            .execute(this::continueTask)
-                                            .submit(PixelBuiltQuests.instance);
-                                }
-                            })
-                            .submit(PixelBuiltQuests.instance);
-                }
+            AtomicInteger count = new AtomicInteger();
+            for (int i = 0; i < quest.messages.size(); i++) {
+                final int j = i;
+                Task.builder()
+                        .delay(count.getAndAdd(quest.timeBetweenMessages), TimeUnit.SECONDS)
+                        .execute(() -> {
+                            Player pl = this.getPlayer();
+                            if (pl != null) {
+                                pl.sendMessage(Util.toText(quest.messages.get(j).replace("%player%", pl.getName())));
+                            }
+                            if (j == quest.messages.size() - 1) {
+                                Task.builder()
+                                        .delay(quest.timeBetweenMessages, TimeUnit.SECONDS)
+                                        .execute(this::continueTask)
+                                        .submit(PixelBuiltQuests.getInstance());
+                            }
+                        })
+                        .submit(PixelBuiltQuests.getInstance());
             }
         }
     }
@@ -139,11 +141,6 @@ public class BaseQuestExecutor implements QuestExecutor {
         for (ValueWrapper<? extends BaseReward<?>> v : this.quest.rewards) {
             BaseReward<?> reward = v.getValue();
             reward.execute(player, quest, questLine, quest.getId());
-        }
-
-        String finish = ConfigManager.getConfig().messages.finish;
-        if (!finish.isEmpty() && !quest.displayName.isEmpty()) {
-            player.sendMessage(Util.toText(finish.replace("%quest%", quest.displayName)));
         }
 
         playerData.startedQuests.remove(this.questLine.getName() + "," + this.quest.getId());

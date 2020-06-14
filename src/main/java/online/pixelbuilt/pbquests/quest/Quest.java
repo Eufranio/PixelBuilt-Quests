@@ -39,10 +39,16 @@ public class Quest {
     public String displayName = "First Quest";
 
     @Setting
-    public List<String> messages = new ArrayList<>();
+    public List<String> startMessages = Lists.newArrayList("&aYou're starting a Quest, %player%!");
+
+    @Setting
+    public List<String> messages = Lists.newArrayList();
 
     @Setting
     public boolean denyMovement = true;
+
+    @Setting
+    public boolean runUponStart = true;
 
     @Setting
     private int id = 0;

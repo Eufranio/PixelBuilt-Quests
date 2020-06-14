@@ -25,11 +25,10 @@ public class MessageReward implements BaseReward<MessageReward> {
 
     @Override
     public void execute(Player player, Quest quest, QuestLine line, int questId) {
-        List<String> list = messages.stream()
-                .map(s -> s.replace("%player%", player.getName()))
-                .collect(Collectors.toList());
-        for (String message : list) {
-            player.sendMessage(Util.toText(message));
-        }
+        messages.stream()
+                .map(s -> s.replace("%player%", player.getName())
+                           .replace("%quest%", quest.displayName))
+                .map(Util::toText)
+                .forEach(player::sendMessage);
     }
 }

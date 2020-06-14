@@ -8,6 +8,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
+import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.task.AmountTask;
@@ -48,6 +49,12 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
 
     public void resetQuestLine(QuestLine line) {
         this.questsRan.removeIf(s -> s.startsWith(line.getName()));
+    }
+
+    public void startQuest(QuestLine line, Quest quest) {
+        if (!this.startedQuests.contains(line.getName() + "," + quest.getId())) {
+            this.startedQuests.add(line.getName() + "," + quest.getId());
+        }
     }
 
     public boolean hasStarted(QuestLine line, Quest quest) {

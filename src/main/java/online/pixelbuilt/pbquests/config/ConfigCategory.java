@@ -25,13 +25,7 @@ public class ConfigCategory {
         public String noMoney = "&cYou need at least &e$%money%&c to run this quest!";
 
         @Setting
-        public String noItem = "&cYou need at least %amount%x &e%item%&c to run this quest!";
-
-        @Setting
         public String hasRan = "&cThis is a one time quest and you've already completed it!";
-
-        @Setting
-        public String finish = "&aCongratulations, you just finished the &e%quest%&a quest!";
 
         @Setting
         public String noProgressMin = "&cYou need at least %progress% progress to run this quest!";
