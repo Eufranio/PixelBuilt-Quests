@@ -17,6 +17,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -34,6 +35,9 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
     public ArrayList<String> startedQuests = Lists.newArrayList();
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
+    private HashMap<String, Instant> quests = Maps.newHashMap();
+
+    @DatabaseField(dataType = DataType.SERIALIZABLE)
     private ArrayList<String> questsRan = Lists.newArrayList();
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
@@ -41,6 +45,9 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
 
     public void addQuest(QuestLine line, Quest quest) {
         this.questsRan.add(line.getName() + "," + quest.getId());
+
+        checkQuests();
+        this.quests.put(line.getName() + "," + quest.getId(), Instant.now());
     }
 
     public boolean hasRan(QuestLine line, Quest quest) {
@@ -49,6 +56,9 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
 
     public void resetQuestLine(QuestLine line) {
         this.questsRan.removeIf(s -> s.startsWith(line.getName()));
+
+        checkQuests();
+        this.quests.keySet().removeIf(s -> s.startsWith(line.getName()));
     }
 
     public void startQuest(QuestLine line, Quest quest) {
@@ -75,6 +85,11 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
 
     public int getProgress(BaseTask task, QuestLine questLine, Quest quest) {
         return this.getStatus(task, questLine, quest).current;
+    }
+
+    public Instant getLastRan(QuestLine line, Quest quest) {
+        checkQuests();
+        return this.quests.get(line.getName() + "," + quest.getId());
     }
 
     public QuestStatus getStatus(BaseTask task, QuestLine questLine, Quest quest) {
@@ -107,5 +122,10 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
                         .provideUnchecked(UserStorageService.class)
                         .get(this.id).orElse(null)
                 );
+    }
+
+    void checkQuests() {
+        if (this.quests == null)
+            this.quests = Maps.newHashMap();
     }
 }

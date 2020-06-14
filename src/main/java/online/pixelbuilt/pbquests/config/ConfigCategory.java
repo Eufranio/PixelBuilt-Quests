@@ -21,6 +21,9 @@ public class ConfigCategory {
     @ConfigSerializable
     public static class Messages {
 
+        @Setting
+        public String cooldown = "&cYou must wait more &b%cooldown%&c before running this quest again!";
+
         @Setting(comment = "supports %display%, %task%, %current%, %total% and %percentage%")
         public String taskNotifyMessage = "&aIncreasing %display% &7- &a%current%/%total% &7- &d%percentage%% Completed";
 

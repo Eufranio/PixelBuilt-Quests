@@ -19,6 +19,9 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +55,21 @@ public class BaseQuestExecutor implements QuestExecutor {
         if (!quest.repeatable && playerData.hasRan(questLine, quest)) {
             player.sendMessage(Util.toText(ConfigManager.getConfig().messages.hasRan));
             return;
+        }
+
+        if (quest.cooldown) {
+            Duration cooldown = Duration.parse("PT" + quest.cooldownDuration);
+            Instant lastRan = playerData.getLastRan(questLine, quest);
+            if (lastRan != null) {
+                Instant nextRun = lastRan.plusSeconds(cooldown.getSeconds());
+                if (Instant.now().isBefore(nextRun)) {
+                    long seconds = Instant.now().until(nextRun, ChronoUnit.SECONDS);
+                    String cooldownMessage = ConfigManager.getConfig().messages.cooldown
+                            .replace("%cooldown%", Util.timeDiffFormat(seconds, true));
+                    player.sendMessage(Util.toText(cooldownMessage));
+                    return;
+                }
+            }
         }
 
         quest.startMessages.forEach(str -> player.sendMessage(Util.toText(str.replace("%player%", player.getName()))));

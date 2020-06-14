@@ -14,6 +14,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
@@ -39,8 +40,18 @@ public class StorageManager {
         try {
             this.status = Persistable.create(QuestStatus.class, ConfigManager.getConfig().database.url);
             this.playerData = Persistable.create(PlayerData.class, ConfigManager.getConfig().database.url);
-            this.triggerData = Persistable.create(Trigger.class, ConfigManager.getConfig().database.url);
 
+            try {
+                playerData.objDao.queryRaw("SELECT quests FROM playerData;").close();
+            } catch (SQLException | IOException e) {
+                try {
+                    playerData.objDao.executeRaw("ALTER TABLE playerData ADD COLUMN quests VARBINARY;");
+                } catch (SQLException ex) {
+                    e.printStackTrace();
+                }
+            }
+
+            this.triggerData = Persistable.create(Trigger.class, ConfigManager.getConfig().database.url);
             this.triggerData.objDao.queryForAll().forEach(t -> this.triggers.put(t.npc, t));
         } catch (SQLException e) {
             e.printStackTrace();

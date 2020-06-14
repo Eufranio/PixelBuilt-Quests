@@ -50,6 +50,13 @@ public class Quest {
     @Setting
     public boolean runUponStart = true;
 
+    @Setting(comment = "If this quest has a cooldown between executions. If this is true, this quest MUST be repeatable, and" +
+            " cooldownDuration must have a valid duration!")
+    public boolean cooldown = false;
+
+    @Setting
+    public String cooldownDuration = "1m10s";
+
     @Setting
     private int id = 0;
 

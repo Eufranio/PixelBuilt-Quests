@@ -25,4 +25,37 @@ public class Util {
         );
     }
 
+    public static String timeDiffFormat(long timeDiffSeconds, boolean includeSeconds) {
+        String timeFormat;
+        int seconds = (int) timeDiffSeconds % 60;
+        timeDiffSeconds = timeDiffSeconds / 60;
+        int minutes = (int) timeDiffSeconds % 60;
+        timeDiffSeconds = timeDiffSeconds / 60;
+        int hours = (int) timeDiffSeconds % 24;
+        timeDiffSeconds = timeDiffSeconds / 24;
+        int days = (int) timeDiffSeconds;
+
+        if (days > 7) {
+            timeFormat = days + " days";
+        } else if (days > 0) {
+            timeFormat = days + "d " + hours + "h";
+        } else if (days == 0 && hours > 0) {
+            if (includeSeconds) {
+                timeFormat = hours + "h " + minutes + "m " + seconds + "s";
+            } else {
+                timeFormat = hours + "h " + minutes + "m";
+            }
+        } else if (days == 0 && hours == 0 && minutes > 0) {
+            if (includeSeconds) {
+                timeFormat = minutes + "m " + seconds + "s";
+            } else {
+                timeFormat = minutes + "m";
+            }
+        } else {
+            timeFormat = seconds + "s";
+        }
+
+        return timeFormat;
+    }
+
 }
