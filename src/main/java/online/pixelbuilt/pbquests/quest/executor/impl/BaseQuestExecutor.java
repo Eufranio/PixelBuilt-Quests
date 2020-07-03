@@ -44,17 +44,16 @@ public class BaseQuestExecutor implements QuestExecutor {
         if (playerData.hasStarted(questLine, quest)) {
             this.run();
         } else {
-            this.start();
-            if (quest.runUponStart)
+            if (this.start() && quest.runUponStart)
                 this.run();
         }
     }
 
-    public void start() {
+    public boolean start() {
         Player player = this.getPlayer();
         if (!quest.repeatable && playerData.hasRan(questLine, quest)) {
             player.sendMessage(Util.toText(ConfigManager.getConfig().messages.hasRan));
-            return;
+            return false;
         }
 
         if (quest.cooldown) {
@@ -67,7 +66,7 @@ public class BaseQuestExecutor implements QuestExecutor {
                     String cooldownMessage = ConfigManager.getConfig().messages.cooldown
                             .replace("%cooldown%", Util.timeDiffFormat(seconds, true));
                     player.sendMessage(Util.toText(cooldownMessage));
-                    return;
+                    return false;
                 }
             }
         }
@@ -75,6 +74,8 @@ public class BaseQuestExecutor implements QuestExecutor {
         quest.startMessages.forEach(str -> player.sendMessage(Util.toText(str.replace("%player%", player.getName()))));
         playerData.startQuest(questLine, quest);
         PixelBuiltQuests.getStorage().save(playerData);
+
+        return true;
     }
 
     public void run() {
