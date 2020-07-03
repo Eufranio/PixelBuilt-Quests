@@ -82,7 +82,7 @@ public class CostTask implements AmountTask {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         return Text.of(TextColors.YELLOW, "Cost (", Text.of(TextColors.AQUA, "$" + this.cost), ")");
     }
 }

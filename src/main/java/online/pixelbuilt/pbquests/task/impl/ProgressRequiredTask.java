@@ -43,7 +43,7 @@ public class ProgressRequiredTask implements BaseTask {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         String progress = "";
         switch (progressCheckMode) {
             case 1:

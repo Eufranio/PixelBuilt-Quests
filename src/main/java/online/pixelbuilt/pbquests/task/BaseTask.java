@@ -6,15 +6,19 @@ import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.TextRepresentable;
 
 import java.util.Map;
 
 /**
  * Created by Frani on 20/01/2019.
  */
-public interface BaseTask {
+public interface BaseTask extends TextRepresentable {
 
-    Text getDisplay();
+    @Deprecated
+    default Text getDisplay() {
+        return this.toText();
+    }
 
     TaskType getType();
 

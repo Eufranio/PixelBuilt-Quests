@@ -51,7 +51,7 @@ public class ByteItemTask implements AmountTask {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         ItemStackSnapshot item = getItem(byteItemId);
         return Text.of(TextColors.YELLOW, "ByteItem ",
                 "(",

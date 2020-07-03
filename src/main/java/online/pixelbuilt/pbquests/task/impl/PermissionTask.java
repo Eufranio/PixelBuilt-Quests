@@ -36,7 +36,7 @@ public class PermissionTask implements BaseTask {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         return Text.of(TextColors.YELLOW, "Permission");
     }
 

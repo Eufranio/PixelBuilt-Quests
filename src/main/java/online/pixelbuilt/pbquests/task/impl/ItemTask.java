@@ -48,7 +48,7 @@ public class ItemTask implements AmountTask {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         return Text.of(TextColors.YELLOW, "Item (",
                 Text.of(TextColors.AQUA, amount, "x ", TextActions.showItem(item.getTemplate()), item.getName()),
                 ")"

@@ -49,7 +49,7 @@ public class VisitTask implements TriggeredTask<MoveEntityEvent> {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         String[] arr = this.visitLocation.split(",");
         return Text.of(TextColors.YELLOW, "Visit (", Text.of(TextColors.AQUA, "x=", arr[0], ", y=", arr[1], ", z=", arr[2], ", ", arr[3]), ")");
     }

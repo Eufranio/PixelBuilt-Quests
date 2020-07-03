@@ -58,7 +58,7 @@ public class KillTask implements TriggeredTask<DestructEntityEvent.Death> {
     }
 
     @Override
-    public Text getDisplay() {
+    public Text toText() {
         return Text.of(TextColors.YELLOW, "Kill (", Text.of(TextColors.AQUA, this.count, " ", checkMode == 2 ? "Entities" : mob.getName()), ")");
     }
 
