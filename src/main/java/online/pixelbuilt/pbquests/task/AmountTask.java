@@ -50,7 +50,7 @@ public interface AmountTask extends BaseTask {
             return Text.EMPTY;
         return Util.toText(
                 ConfigManager.getConfig().messages.taskNotifyMessage
-                    .replace("%display%", Util.fromText(this.getDisplay()))
+                    .replace("%display%", Util.fromText(this.toText()))
                     .replace("%task%", this.getType().getName())
                     .replace("%current%", status.current + "")
                     .replace("%total%", this.getTotal() + "")

@@ -89,7 +89,7 @@ public class BaseQuestExecutor implements QuestExecutor {
                     ((AmountTask) task).tryIncrease(playerData, status);
 
                 if (!task.isCompleted(playerData, questLine, quest))
-                    toComplete.add(task.getDisplay());
+                    toComplete.add(task.toText());
             }
         }
 
