@@ -95,14 +95,10 @@ public class BaseQuestExecutor implements QuestExecutor {
 
         final Player player = this.getPlayer();
         if (!toComplete.isEmpty()) {
-            player.sendMessage(Text.of(
-                    TextColors.RED, "There are tasks that you haven't completed yet for this Quest: ",
-                    Text.joinWith(Text.of(", "), toComplete)
-            ));
-            player.sendMessage(Text.of(
-                    TextColors.AQUA, "Hint: ",
-                    TextColors.GRAY, "Use /pbq status to check your current status on those tasks!"
-            ));
+            player.sendMessage(Text.of(Util.toText(ConfigManager.getConfig().messages.notAllTasksCompleted), Text.joinWith(Text.of(", "), toComplete)));
+            String hintText = ConfigManager.getConfig().messages.notAllTasksCompletedHint;
+            if (!hintText.isEmpty())
+                player.sendMessage(Util.toText(hintText));
             return;
         }
 

@@ -22,13 +22,34 @@ public class ConfigCategory {
     public static class Messages {
 
         @Setting
+        public String playerQuestInfo = "&b%player%&a's Quest Info";
+
+        @Setting
+        public String noQuestsStarted = "&cYou have no quests started!";
+
+        @Setting
+        public String taskNotCompleted = "&c&lNot Completed";
+
+        @Setting
+        public String taskCompleted = "&a&lCompleted";
+
+        @Setting
+        public String currentProgress = "&aProgress of &b%player%&a on %line%: &e%progress%";
+
+        @Setting
+        public String notAllTasksCompleted = "&cThere are tasks that you haven't completed yet for this Quest: ";
+
+        @Setting
+        public String notAllTasksCompletedHint = "&bHint: &7Use /pbq status to check your status on those quests!";
+
+        @Setting
         public String cooldown = "&cYou must wait more &b%cooldown%&c before running this quest again!";
 
         @Setting(comment = "supports %display%, %task%, %current%, %total% and %percentage%")
         public String taskNotifyMessage = "&aIncreasing %display% &7- &a%current%/%total% &7- &d%percentage%% Completed";
 
         @Setting
-        public String noQuest = "&c There is no Quest with this quest line/id!";
+        public String noQuest = "&cThere is no Quest with this quest line/id!";
 
         @Setting
         public String noPerm = "&cYou don't have permission to run this quest!";

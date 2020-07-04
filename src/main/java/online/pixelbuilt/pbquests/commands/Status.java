@@ -8,6 +8,7 @@ import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.task.AmountTask;
 import online.pixelbuilt.pbquests.task.BaseTask;
+import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -45,28 +46,28 @@ public class Status extends BaseCommand {
                 BaseTask task = t.getValue();
                 QuestStatus questStatus = data.getStatus(task, line, quest);
                 text.add(Text.of(
-                        TextColors.YELLOW, "  > ", task.getDisplay(),
+                        TextColors.YELLOW, "  > ", task,
                         TextColors.GRAY, " | ",
                         task instanceof AmountTask ?
                                 Text.of(
                                         TextColors.GREEN, questStatus.current, "/", ((AmountTask) task).getTotal(),
                                         TextColors.LIGHT_PURPLE, " (", ((AmountTask) task).getPercentageCompleted(questStatus), "%)") :
                                 task.isCompleted(data, line, quest) ?
-                                        Text.of(TextColors.GREEN, "Completed") :
-                                        Text.of(TextColors.RED, "Not completed")
+                                        Util.toText(ConfigManager.getConfig().messages.taskCompleted) :
+                                        Util.toText(ConfigManager.getConfig().messages.taskNotCompleted)
                 ));
             });
             text.add(Text.of());
         });
 
         if (text.isEmpty())
-            text.add(Text.of(TextColors.GRAY, TextStyles.ITALIC, "You have no quests started!"));
+            text.add(Util.toText(ConfigManager.getConfig().messages.noQuestsStarted));
         else
             text.remove(text.size() - 1);
 
         PaginationList.builder()
                 .padding(Text.of(TextColors.WHITE, TextStyles.STRIKETHROUGH, "-"))
-                .title(Text.of(TextColors.AQUA, ((Player) src).getName(), "'s Quest Info"))
+                .title(Util.toText(ConfigManager.getConfig().messages.playerQuestInfo.replace("%player%", ((Player) src).getName())))
                 .contents(text)
                 .sendTo(src);
         return CommandResult.success();

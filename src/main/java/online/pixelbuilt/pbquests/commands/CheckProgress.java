@@ -1,15 +1,14 @@
 package online.pixelbuilt.pbquests.commands;
 
-import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
+import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 public class CheckProgress extends BaseCommand {
 
@@ -19,11 +18,10 @@ public class CheckProgress extends BaseCommand {
         QuestLine line = args.requireOne("quest line");
 
         PlayerData data = storageManager.getData(user.getUniqueId());
-        src.sendMessage(Text.of(
-                TextColors.GREEN, "Progress of ",
-                TextColors.YELLOW, user.getName(),
-                TextColors.GREEN, ": ",
-                TextColors.YELLOW, data.getProgress(line)
+        src.sendMessage(Util.toText(ConfigManager.getConfig().messages.currentProgress
+                .replace("%player%", user.getName())
+                .replace("%line%", line.getName())
+                .replace("%progress%", data.getProgress(line) + "")
         ));
 
         return CommandResult.success();

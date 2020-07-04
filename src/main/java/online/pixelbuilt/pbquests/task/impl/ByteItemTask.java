@@ -17,6 +17,7 @@ import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.translation.Translation;
 
 /**
  * Created by Frani on 31/12/2019.
@@ -55,7 +56,7 @@ public class ByteItemTask implements AmountTask {
         ItemStackSnapshot item = getItem(byteItemId);
         return Text.of(TextColors.YELLOW, "ByteItem ",
                 "(",
-                TextColors.AQUA, TextActions.showItem(item), item.get(Keys.DISPLAY_NAME).orElse(Text.of(item.getType().getName())),
+                TextColors.AQUA, TextActions.showItem(item), item.get(Keys.DISPLAY_NAME).orElse(Text.of(item.getTranslation())),
                 TextColors.YELLOW,
                 ")"
         );

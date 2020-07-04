@@ -15,11 +15,6 @@ import java.util.Map;
  */
 public interface BaseTask extends TextRepresentable {
 
-    @Deprecated
-    default Text getDisplay() {
-        return this.toText();
-    }
-
     TaskType getType();
 
     int getId();
