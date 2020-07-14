@@ -6,6 +6,7 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.reward.BaseReward;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.utils.Util;
 import org.spongepowered.api.entity.living.player.Player;
 
@@ -24,11 +25,11 @@ public class MessageReward implements BaseReward<MessageReward> {
     public List<String> messages = Lists.newArrayList("&aSuccessfully completed quest!");
 
     @Override
-    public void execute(Player player, Quest quest, QuestLine line, int questId) {
+    public void execute(PlayerData data, QuestLine line, Quest quest) {
         messages.stream()
-                .map(s -> s.replace("%player%", player.getName())
+                .map(s -> s.replace("%player%", data.getUser().getName())
                            .replace("%quest%", quest.displayName))
                 .map(Util::toText)
-                .forEach(player::sendMessage);
+                .forEach(msg -> data.getUser().getPlayer().ifPresent(p -> p.sendMessage(msg)));
     }
 }

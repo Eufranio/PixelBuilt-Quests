@@ -3,6 +3,7 @@ package online.pixelbuilt.pbquests.storage.sql.persister;
 import com.j256.ormlite.field.FieldType;
 import com.j256.ormlite.field.SqlType;
 import com.j256.ormlite.field.types.StringType;
+import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -34,7 +35,12 @@ public class LocationPersister extends StringType {
         if (sqlArg == null)
             return null;
         String[] array = sqlArg.toString().split(",");
-        World world = Sponge.getServer().getWorld(UUID.fromString(array[3])).get();
+        World world = Sponge.getServer().getWorld(UUID.fromString(array[3])).orElse(null);
+        if (world == null) {
+            PixelBuiltQuests.getInstance().logger.error("There's an invalid world saved in the PixelBuilt-Quests database, leading to an invalid trigger. If you have reset your " +
+                    "world, make sure to delete the PBQ database as well! This could also be caused by having triggers on unloaded worlds.");
+            return null;
+        }
         return new Location<>(world, Integer.parseInt(array[0]), Integer.parseInt(array[1]), Integer.parseInt(array[2]));
     }
 

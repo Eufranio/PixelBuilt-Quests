@@ -21,7 +21,13 @@ public class Triggers extends BaseCommand {
         List<Text> text = storageManager.getTriggers().values().stream()
                 .map(trigger -> {
                     Text teleport = Text.of(
-                            TextActions.executeCallback(s -> ((Player) s).setLocation(trigger.location)),
+                            TextActions.executeCallback(s -> {
+                                if (trigger.location == null) {
+                                    s.sendMessage(Text.of(TextColors.RED, "This trigger has an invalid location!"));
+                                    return;
+                                }
+                                ((Player) s).setLocation(trigger.location);
+                            }),
                             TextActions.showText(Text.of("Click to teleport")),
                             TextColors.GREEN, "[TP]"
                     );

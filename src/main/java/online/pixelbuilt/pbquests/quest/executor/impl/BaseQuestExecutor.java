@@ -29,9 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BaseQuestExecutor implements QuestExecutor {
 
+    UUID player;
     Quest quest;
     QuestLine questLine;
-    UUID player;
     PlayerData playerData;
 
     @Override
@@ -144,7 +144,8 @@ public class BaseQuestExecutor implements QuestExecutor {
         Player player = this.getPlayer();
         if (player == null) return;
 
-        PlayerData playerData = PixelBuiltQuests.getStorage().getData(this.player);
+        // refresh data that might have been changed since last query
+        playerData.refreshData();
 
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
@@ -157,7 +158,7 @@ public class BaseQuestExecutor implements QuestExecutor {
 
         for (ValueWrapper<? extends BaseReward<?>> v : this.quest.rewards) {
             BaseReward<?> reward = v.getValue();
-            reward.execute(player, quest, questLine, quest.getId());
+            reward.execute(playerData, questLine, quest);
         }
 
         playerData.startedQuests.remove(this.questLine.getName() + "," + this.quest.getId());

@@ -22,13 +22,11 @@ public class ProgressReward implements BaseReward<ProgressReward> {
     public int progressAfter = 1;
 
     @Override
-    public void execute(Player player, Quest quest, QuestLine line, int questId) {
-        PlayerData data = PixelBuiltQuests.getStorage().getData(player.getUniqueId());
+    public void execute(PlayerData data, QuestLine line, Quest quest) {
         if (progressMode == 1) {
             data.setProgress(line, progressAfter);
         } else if (progressMode == 2) {
             data.addProgress(line, progressAfter);
         }
-        PixelBuiltQuests.getStorage().save(data);
     }
 }

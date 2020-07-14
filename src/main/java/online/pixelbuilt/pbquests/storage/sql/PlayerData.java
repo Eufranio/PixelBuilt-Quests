@@ -17,6 +17,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -127,5 +128,13 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
     void checkQuests() {
         if (this.quests == null)
             this.quests = Maps.newHashMap();
+    }
+
+    public void refreshData() {
+        try {
+            this.refresh();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

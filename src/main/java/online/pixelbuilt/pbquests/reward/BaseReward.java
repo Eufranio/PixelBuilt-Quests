@@ -2,6 +2,7 @@ package online.pixelbuilt.pbquests.reward;
 
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
+import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.Map;
@@ -11,6 +12,6 @@ import java.util.Map;
  */
 public interface BaseReward<T> {
 
-    void execute(Player player, Quest quest, QuestLine line, int questId);
+    void execute(PlayerData data, QuestLine questLine, Quest quest);
 
 }

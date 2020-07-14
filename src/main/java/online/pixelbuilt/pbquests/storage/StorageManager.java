@@ -88,8 +88,9 @@ public class StorageManager {
 
     public Trigger getTriggerAt(Location<World> location) {
         return this.triggers.values().stream()
-                .filter(t -> t.location.getExtent().getUniqueId().equals(location.getExtent().getUniqueId()))
-                .filter(t -> t.location.getBlockPosition().equals(location.getBlockPosition()))
+                .filter(t -> t.location != null &&
+                        t.location.getExtent().getUniqueId().equals(location.getExtent().getUniqueId()) &&
+                        t.location.getBlockPosition().equals(location.getBlockPosition()))
                 .findFirst()
                 .orElse(null);
     }
