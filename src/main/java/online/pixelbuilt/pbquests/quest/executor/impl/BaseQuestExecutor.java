@@ -82,11 +82,12 @@ public class BaseQuestExecutor implements QuestExecutor {
         List<Text> toComplete = Lists.newArrayList();
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
-            QuestStatus status = playerData.getStatus(task, questLine, quest);
 
             if (!task.isCompleted(playerData, questLine, quest)) {
-                if (task instanceof AmountTask)
-                    ((AmountTask) task).tryIncrease(playerData, status);
+                if (task instanceof AmountTask) {
+                    AmountTask amountTask = (AmountTask) task;
+                    amountTask.tryIncrease(playerData, playerData.getOrCreateStatus(amountTask, questLine, quest));
+                }
 
                 if (!task.isCompleted(playerData, questLine, quest))
                     toComplete.add(task.toText());
@@ -149,11 +150,10 @@ public class BaseQuestExecutor implements QuestExecutor {
 
         for (ValueWrapper<? extends BaseTask> v : this.quest.tasks) {
             BaseTask task = v.getValue();
-            QuestStatus status = playerData.getStatus(task, questLine, quest);
-            if (status != null) {
-                playerData.status.remove(status);
-                // clear the previous progress of this quest, so it can be restarted
-            }
+            if (task instanceof AmountTask)
+                playerData.getStatus((AmountTask) task, questLine, quest)
+                        .ifPresent(playerData.status::remove);
+            // clear the previous progress of this quest, so it can be restarted
         }
 
         for (ValueWrapper<? extends BaseReward<?>> v : this.quest.rewards) {

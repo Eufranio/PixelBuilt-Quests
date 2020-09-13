@@ -42,7 +42,9 @@ public interface AmountTask extends BaseTask {
 
     @Override
     default boolean isCompleted(PlayerData data, QuestLine line, Quest quest) {
-        return data.getProgress(this, line, quest) >= this.getTotal();
+        return data.getStatus(this, line, quest)
+                .map(s -> s.current >= this.getTotal())
+                .orElse(false);
     }
 
     default Text getNotifyMessage(PlayerData data, QuestStatus status) {

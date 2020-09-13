@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 @DatabaseTable(tableName = "playerData")
@@ -84,18 +85,12 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
         this.progress.put(line.getName(), progress);
     }
 
-    public int getProgress(BaseTask task, QuestLine questLine, Quest quest) {
-        return this.getStatus(task, questLine, quest).current;
-    }
-
     public Instant getLastRan(QuestLine line, Quest quest) {
         checkQuests();
         return this.quests.get(line.getName() + "," + quest.getId());
     }
 
-    public QuestStatus getStatus(BaseTask task, QuestLine questLine, Quest quest) {
-        if (!(task instanceof AmountTask))
-            return null;
+    public QuestStatus getOrCreateStatus(AmountTask task, QuestLine questLine, Quest quest) {
         return this.status.stream()
                 .filter(s -> s.questLine.equals(questLine.getName()) &&
                         s.questId == quest.getId() &&
@@ -114,6 +109,12 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
                     this.status.add(status);
                     return status;
                 });
+    }
+
+    public Optional<QuestStatus> getStatus(AmountTask task, QuestLine questLine, Quest quest) {
+        if (!this.hasStarted(questLine, quest))
+            return Optional.empty();
+        return Optional.of(this.getOrCreateStatus(task, questLine, quest));
     }
 
     public User getUser() {

@@ -44,19 +44,28 @@ public class Status extends BaseCommand {
 
             quest.tasks.forEach(t -> {
                 BaseTask task = t.getValue();
-                QuestStatus questStatus = data.getStatus(task, line, quest);
+
+                Text taskText;
+                if (task instanceof AmountTask) {
+                    QuestStatus questStatus = data.getOrCreateStatus((AmountTask) task, line, quest);
+                    taskText = Text.of(
+                            TextColors.GREEN, questStatus.current, "/", ((AmountTask) task).getTotal(),
+                            TextColors.LIGHT_PURPLE, " (", ((AmountTask) task).getPercentageCompleted(questStatus), "%)"
+                    );
+                } else {
+                    if (task.isCompleted(data, line, quest)) {
+                        taskText = Util.toText(ConfigManager.getConfig().messages.taskCompleted);
+                    } else {
+                        taskText = Util.toText(ConfigManager.getConfig().messages.taskNotCompleted);
+                    }
+                }
+
                 text.add(Text.of(
                         TextColors.YELLOW, "  > ", task,
-                        TextColors.GRAY, " | ",
-                        task instanceof AmountTask ?
-                                Text.of(
-                                        TextColors.GREEN, questStatus.current, "/", ((AmountTask) task).getTotal(),
-                                        TextColors.LIGHT_PURPLE, " (", ((AmountTask) task).getPercentageCompleted(questStatus), "%)") :
-                                task.isCompleted(data, line, quest) ?
-                                        Util.toText(ConfigManager.getConfig().messages.taskCompleted) :
-                                        Util.toText(ConfigManager.getConfig().messages.taskNotCompleted)
+                        TextColors.GRAY, " | ", taskText
                 ));
             });
+
             text.add(Text.of());
         });
 

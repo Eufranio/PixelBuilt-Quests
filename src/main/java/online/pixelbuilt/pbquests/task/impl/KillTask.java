@@ -70,8 +70,8 @@ public class KillTask implements TriggeredTask<DestructEntityEvent.Death> {
                 if ((checkMode == 1 && event.getTargetEntity().getType() == this.mob) || checkMode == 2) {
                     PlayerData data = PixelBuiltQuests.getStorage().getData(root.getSource().getUniqueId());
                     if (!this.isCompleted(data, line, quest)) {
-                        QuestStatus status = data.getStatus(this, line, quest);
-                        this.increase(data, status, 1);
+                        data.getStatus(this, line, quest)
+                                .ifPresent(s -> this.increase(data, s, 1));
                     }
                 }
             }
