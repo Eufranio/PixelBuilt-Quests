@@ -32,10 +32,9 @@ public class Status extends BaseCommand {
         PlayerData data = storageManager.getData(((Player) src).getUniqueId());
         List<Text> text = Lists.newArrayList();
 
-        data.startedQuests.forEach(s -> {
-            String[] arr = s.split(",");
-            QuestLine line = ConfigManager.getLine(arr[0]);
-            Quest quest = ConfigManager.getQuest(Integer.parseInt(arr[1]));
+        data.getQuestsStarted().forEach(tuple -> {
+            QuestLine line = tuple.getFirst();
+            Quest quest = tuple.getSecond();
             text.add(Text.of(
                     TextColors.YELLOW, "* " + line.getName(),
                     TextColors.GRAY, "/",

@@ -12,8 +12,10 @@ version = pluginVersion
 dependencies {
     compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
     annotationProcessor 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
+
     compileOnly files('PBQMessages-1.0.jar')
     compileOnly 'com.github.randombyte-developer:byte-items:v2.4.1'
+    compileOnly 'com.github.ronaldburns:PlaceholderAPI:b58a67b'
     api 'com.github.Eufranio:StorageUtils:2.2'
 }
 

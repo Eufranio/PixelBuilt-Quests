@@ -8,6 +8,7 @@ import online.pixelbuilt.pbquests.config.*;
 import online.pixelbuilt.pbquests.config.serialization.ValueWrapper;
 import online.pixelbuilt.pbquests.listeners.Listeners;
 import online.pixelbuilt.pbquests.listeners.TaskListener;
+import online.pixelbuilt.pbquests.placeholder.PlaceholderHandler;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorType;
 import online.pixelbuilt.pbquests.quest.executor.QuestExecutorTypeRegistryModule;
 import online.pixelbuilt.pbquests.reward.RewardRegistryModule;
@@ -46,8 +47,6 @@ public class PixelBuiltQuests {
     public static List<UUID> playersBusy = Lists.newArrayList();
     public static List<UUID> runningQuests = Lists.newArrayList();
 
-    private StorageManager storage;
-
     @Inject
     @ConfigDir(sharedRoot = false)
     public File configDir;
@@ -56,6 +55,8 @@ public class PixelBuiltQuests {
     public Logger logger;
 
     TaskListener taskListener;
+    StorageManager storage;
+    PlaceholderHandler placeholderHandler;
 
     @Listener
     public void onPreInit(GamePreInitializationEvent e) {
@@ -70,6 +71,7 @@ public class PixelBuiltQuests {
 
     @Listener
     public void onStarted(GameStartedServerEvent event) {
+        logger.info("PixelBuilt - Quests is starting!");
         ConfigManager.init();
 
         this.taskListener = new TaskListener(this);
@@ -79,9 +81,14 @@ public class PixelBuiltQuests {
         this.storage = new StorageManager(this);
         this.storage.init();
 
-        logger.warn("PixelBuilt - Quests is starting!");
         CommandManager.registerCommands();
         Sponge.getEventManager().registerListeners(this, new Listeners(this));
+
+        if (Sponge.getPluginManager().isLoaded("placeholderapi")) {
+            logger.info("Detected PlaceholderAPI, registering placeholders");
+            placeholderHandler = new PlaceholderHandler(this);
+            placeholderHandler.init();
+        }
     }
 
     @Listener

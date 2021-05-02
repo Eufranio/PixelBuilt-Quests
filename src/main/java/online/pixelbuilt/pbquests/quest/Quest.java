@@ -90,4 +90,12 @@ public class Quest {
     public void setId(int id) {
         this.id = id;
     }
+
+    public BaseTask getTask(int id) {
+        return this.tasks.stream()
+                .filter(value -> value.getValue().getId() == id)
+                .map(ValueWrapper::getValue)
+                .findFirst()
+                .orElse(null);
+    }
 }

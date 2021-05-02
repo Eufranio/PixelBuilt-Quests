@@ -161,7 +161,6 @@ public class BaseQuestExecutor implements QuestExecutor {
             reward.execute(playerData, questLine, quest);
         }
 
-        playerData.startedQuests.remove(this.questLine.getName() + "," + this.quest.getId());
         playerData.addQuest(this.questLine, this.quest);
         PixelBuiltQuests.getStorage().save(playerData);
     }

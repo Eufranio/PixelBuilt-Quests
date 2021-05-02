@@ -9,6 +9,7 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.misc.BaseDaoEnabled;
 import com.j256.ormlite.table.DatabaseTable;
 import online.pixelbuilt.pbquests.PixelBuiltQuests;
+import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.task.AmountTask;
@@ -16,13 +17,11 @@ import online.pixelbuilt.pbquests.task.BaseTask;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.user.UserStorageService;
+import org.spongepowered.api.util.Tuple;
 
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @DatabaseTable(tableName = "playerData")
 public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
@@ -34,18 +33,32 @@ public class PlayerData extends BaseDaoEnabled<PlayerData, UUID> {
     public ForeignCollection<QuestStatus> status;
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
-    public ArrayList<String> startedQuests = Lists.newArrayList();
+    ArrayList<String> startedQuests = Lists.newArrayList();
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
-    private HashMap<String, Instant> quests = Maps.newHashMap();
+    HashMap<String, Instant> quests = Maps.newHashMap();
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
-    private ArrayList<String> questsRan = Lists.newArrayList();
+    ArrayList<String> questsRan = Lists.newArrayList();
 
     @DatabaseField(dataType = DataType.SERIALIZABLE)
-    private HashMap<String, Integer> progress = Maps.newHashMap();
+    HashMap<String, Integer> progress = Maps.newHashMap();
+
+    public List<Tuple<QuestLine, Quest>> getQuestsStarted() {
+        List<Tuple<QuestLine, Quest>> list = Lists.newArrayList();
+        for (String string : this.startedQuests) {
+            String[] array = string.split(",");
+            QuestLine questLine = ConfigManager.getLine(array[0]);
+            Quest quest = ConfigManager.getQuest(Integer.parseInt(array[1]));
+            if (questLine == null || quest == null)
+                continue;
+            list.add(new Tuple<>(questLine, quest));
+        }
+        return list;
+    }
 
     public void addQuest(QuestLine line, Quest quest) {
+        this.startedQuests.remove(line.getName() + "," + quest.getId());
         this.questsRan.add(line.getName() + "," + quest.getId());
 
         checkQuests();
