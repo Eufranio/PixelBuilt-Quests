@@ -1,11 +1,13 @@
 package online.pixelbuilt.pbquests.task;
 
+import online.pixelbuilt.pbquests.PixelBuiltQuests;
 import online.pixelbuilt.pbquests.config.ConfigManager;
 import online.pixelbuilt.pbquests.quest.Quest;
 import online.pixelbuilt.pbquests.quest.QuestLine;
 import online.pixelbuilt.pbquests.storage.sql.PlayerData;
 import online.pixelbuilt.pbquests.storage.sql.QuestStatus;
 import online.pixelbuilt.pbquests.utils.Util;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatType;
 
@@ -13,7 +15,7 @@ public interface AmountTask extends BaseTask {
 
     int getTotal();
 
-    // this should be overriden so it calls increase()
+    // this should be overriden and call increase()
     void tryIncrease(PlayerData data, QuestStatus status);
 
     default void increase(PlayerData data, QuestStatus status, int amount) {
@@ -25,11 +27,20 @@ public interface AmountTask extends BaseTask {
         }
 
         status.onUpdate();
+
         data.getUser().getPlayer().ifPresent(p -> {
             final Text notifyMessage = this.getNotifyMessage(data, status);
             if (!notifyMessage.isEmpty()) {
                 ChatType type = ConfigManager.getConfig().taskNotifyChatType;
                 p.sendMessage(type, this.getNotifyMessage(data, status));
+            }
+
+            Quest quest = ConfigManager.getQuest(status.questId);
+            QuestLine line = ConfigManager.getLine(status.questLine);
+            if (quest.autocomplete && data.hasStarted(line, quest)) {
+                Task.builder().execute(() -> {
+                    quest.getExecutor().execute(quest, line, p, false);
+                }).submit(PixelBuiltQuests.getInstance());
             }
         });
     }

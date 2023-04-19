@@ -33,9 +33,16 @@ public class BaseQuestExecutor implements QuestExecutor {
     Quest quest;
     QuestLine questLine;
     PlayerData playerData;
+    boolean sendIncompleteTasksMessage;
 
     @Override
     public void execute(Quest quest, QuestLine questLine, Player player) {
+        this.execute(quest, questLine, player, true);
+    }
+
+    @Override
+    public void execute(Quest quest, QuestLine questLine, Player player, boolean sendIncompleteTasksMessage) {
+        this.sendIncompleteTasksMessage = sendIncompleteTasksMessage;
         this.quest = quest;
         this.questLine = questLine;
         this.player = player.getUniqueId();
@@ -96,10 +103,12 @@ public class BaseQuestExecutor implements QuestExecutor {
 
         final Player player = this.getPlayer();
         if (!toComplete.isEmpty()) {
-            player.sendMessage(Text.of(Util.toText(ConfigManager.getConfig().messages.notAllTasksCompleted), Text.joinWith(Text.of(", "), toComplete)));
-            String hintText = ConfigManager.getConfig().messages.notAllTasksCompletedHint;
-            if (!hintText.isEmpty())
-                player.sendMessage(Util.toText(hintText));
+            if (sendIncompleteTasksMessage) {
+                player.sendMessage(Text.of(Util.toText(ConfigManager.getConfig().messages.notAllTasksCompleted), Text.joinWith(Text.of(", "), toComplete)));
+                String hintText = ConfigManager.getConfig().messages.notAllTasksCompletedHint;
+                if (!hintText.isEmpty())
+                    player.sendMessage(Util.toText(hintText));
+            }
             return;
         }
 

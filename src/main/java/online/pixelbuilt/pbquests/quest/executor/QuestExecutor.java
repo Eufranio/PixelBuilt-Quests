@@ -11,4 +11,8 @@ public interface QuestExecutor {
 
     void execute(Quest quest, QuestLine questLine, Player player);
 
+    default void execute(Quest quest, QuestLine questLine, Player player, boolean sendIncompleteTasksMessage) {
+        this.execute(quest, questLine, player);
+    }
+
 }

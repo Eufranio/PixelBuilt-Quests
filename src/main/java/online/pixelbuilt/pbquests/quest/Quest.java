@@ -29,6 +29,9 @@ import java.util.List;
 @ConfigSerializable
 public class Quest {
 
+    @Setting(comment = "If this quest should be automatically checked for the player every time the status of any of it's Tasks changes")
+    public boolean autocomplete = false;
+
     @Setting
     public boolean repeatable = true;
 
