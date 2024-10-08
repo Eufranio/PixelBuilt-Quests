@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.eufranio.pixelbuiltquests.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+  ],
+  "mixins": [
+    "MixinServerGamePacketListenerImpl"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

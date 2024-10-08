@@ -1,54 +1,95 @@
 plugins {
-    id 'org.spongepowered.plugin' version '0.9.0'
-    id 'com.github.johnrengelman.shadow' version '4.0.3'
+    id 'dev.architectury.loom' version '1.7-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
-apply plugin: 'java-library'
-apply plugin: 'maven'
-
-group = pluginGroup
-version = pluginVersion
-
-dependencies {
-    compileOnly 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
-    annotationProcessor 'org.spongepowered:spongeapi:7.2.0-SNAPSHOT'
-
-    compileOnly files('PBQMessages-1.0.jar')
-    compileOnly 'com.github.randombyte-developer:byte-items:v2.4.1'
-    compileOnly 'com.github.ronaldburns:PlaceholderAPI:b58a67b'
-    api 'com.github.Eufranio:StorageUtils:2.4'
+architectury {
+    minecraft = project.minecraft_version
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
-shadowJar {
-    project.configurations.api.canBeResolved = true
-    configurations = [project.configurations.api]
-    from sourceSets.main.output
+subprojects {
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'maven-publish'
+
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$rootProject.archives_name-$project.name"
+    }
+
+    repositories {
+        // Add repositories to retrieve artifacts from in here.
+        // You should only use this when depending on other mods because
+        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+        // for more information about repositories.]
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://maven.impactdev.net/repository/development' }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = "https://api.modrinth.com/maven"
+                }
+            }
+            filter {
+                includeGroup "maven.modrinth"
+            }
+        }
+        maven { url = 'https://jitpack.io' }
+    }
+
+    loom {
+        silentMojangMappingsLicense()
+        runConfigs.configureEach {
+            vmArg "-XX:+AllowEnhancedClassRedefinition"
+        }
+    }
+
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.officialMojangMappings()
+        implementation 'net.impactdev.impactor.api:economy:5.2.4-SNAPSHOT'
+        include(implementation('com.github.Eufranio:StorageUtils:2.5.2'))
+        compileOnly 'net.luckperms:api:5.4'
+    }
+
+    java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
+
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 21
+    }
+
+    // Configure Maven publishing.
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
 }
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-    archives shadowJar
-}
-
-build.dependsOn shadowJar
-
-sponge.plugin.id = pluginId
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8

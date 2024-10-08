@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+#issueTrackerURL = ""
+license = "Insert License Here"
+
+[[mods]]
+modId = "pixelbuiltquests"
+version = "${version}"
+displayName = "pixelbuiltquests"
+authors = "Me!"
+description = '''
+A complete Quests plugin that supports multiple types of objectives and rewards.
+'''
+#logoFile = ""
+
+[[dependencies.pixelbuiltquests]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.pixelbuiltquests]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.pixelbuiltquests]]
+modId = "architectury"
+type = "required"
+versionRange = "[13.0.2,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.pixelbuiltquests]]
+modId = "luckperms"
+type = "required"
+versionRange = "[5.4,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config = "pixelbuiltquests.mixins.json"

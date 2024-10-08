@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "pixelbuiltquests",
+  "version": "${version}",
+  "name": "pixelbuiltquests",
+  "description": "A complete Quests plugin that supports multiple types of objectives and rewards.",
+  "authors": [
+    "Eufranio"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Eufranio/PixelBuilt-Quests",
+    "sources": "https://github.com/Eufranio/PixelBuilt-Quests"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/pixelbuiltquests/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.eufranio.pixelbuiltquests.fabric.PixelBuiltQuestsFabric"
+    ]
+  },
+  "mixins": [
+    "pixelbuiltquests.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.5",
+    "minecraft": "~1.21",
+    "java": ">=21",
+    "architectury": ">=13.0.2",
+    "fabric-api": "*",
+    "luckperms": ">=5.4"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
