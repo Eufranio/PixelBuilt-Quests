@@ -1,12 +1,17 @@
 package dev.eufranio.pixelbuiltquests.task.impl;
 
+import dev.eufranio.pixelbuiltquests.PixelBuiltQuests;
+import dev.eufranio.pixelbuiltquests.config.ConfigManager;
+import dev.eufranio.pixelbuiltquests.economy.QuestsEconomyProvider;
 import dev.eufranio.pixelbuiltquests.storage.sql.TaskStatus;
 import dev.eufranio.pixelbuiltquests.task.AmountTask;
 import dev.eufranio.pixelbuiltquests.task.TaskType;
 import dev.eufranio.pixelbuiltquests.task.TaskTypes;
+import dev.eufranio.pixelbuiltquests.utils.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
 
@@ -38,30 +43,25 @@ public class CostTask implements AmountTask {
 
     @Override
     public void tryIncrease(UUID player, TaskStatus status) {
-        /*EconomyService service = Sponge.getServiceManager().provide(EconomyService.class).orElse(null);
-        if (service == null) {
+        try {
+            QuestsEconomyProvider.get();
+        } catch (IllegalStateException ex) {
             PixelBuiltQuests.instance().logger().error("PBQ needs an economy plugin if quest prices are enabled!");
-            data.getUser().getPlayer().ifPresent(p ->
-                    p.sendMessage(Text.of(
-                            TextColors.RED, "An error ocurred while checking the requeriments of this quest, contact an staff!")
-                    )
-            );
             return;
         }
 
-        UniqueAccount account = service.getOrCreateAccount(data.id).get();
-        BigDecimal cost = new BigDecimal(this.cost);
-        TransactionResult result = account.withdraw(service.getDefaultCurrency(), cost, Sponge.getCauseStackManager().getCurrentCause());
-        if (result.getResult() != ResultType.SUCCESS) {
-            data.getUser().getPlayer().ifPresent(p ->
-                    p.sendMessage(Util.toText(ConfigManager.getConfig().messages.noMoney
-                            .replace("%money%", cost.toString())
-                    ))
-            );
+        if (QuestsEconomyProvider.get().has(player, this.cost)) {
+            QuestsEconomyProvider.get().withdraw(player, this.cost);
+            this.increase(player, status, this.cost);
             return;
-        } else {
-            this.increase(data, status, this.cost);
-        }*/
+        }
+
+        ServerPlayer p = Util.player(player);
+        if (p != null) {
+            p.sendSystemMessage(Util.text(ConfigManager.getConfig().messages.noMoney
+                    .replace("%money%", ""+cost)
+            ));
+        }
     }
 
     @Override

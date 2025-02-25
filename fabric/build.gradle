@@ -35,6 +35,7 @@ dependencies {
     modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
 
     modRuntimeOnly "maven.modrinth:luckperms:v5.4.140-fabric"
+    modImplementation "maven.modrinth:blanketeconomy:1.4.5"
     shadowBundle 'com.github.Eufranio:StorageUtils:2.5.2'
     shadowBundle 'com.h2database:h2:2.3.232'
 
