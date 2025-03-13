@@ -120,21 +120,22 @@ public class PixelBuiltQuests {
             //placeholderHandler.init();
         }
 
-        PBQEvents.RELOAD.register(() -> {
-            LOGGER.info("Reloading PixelBuiltQuests");
+    }
 
-            PBQEvents.REGISTER_MODULES.clearListeners();
-            PBQEvents.REGISTER_DEFAULTS.clearListeners();
-            PBQEvents.REGISTER_TYPES.clearListeners();
-            PBQEvents.POST_REGISTER.clearListeners();
-            PBQEvents.RELOAD.clearListeners();
+    public void reload() {
+        LOGGER.info("Reloading PixelBuiltQuests");
 
-            registry.reset();
-            setup();
-            started();
+        PBQEvents.REGISTER_MODULES.clearListeners();
+        PBQEvents.REGISTER_DEFAULTS.clearListeners();
+        PBQEvents.REGISTER_TYPES.clearListeners();
+        PBQEvents.POST_REGISTER.clearListeners();
+        registry.reset();
 
-            LOGGER.info("Reload complete.");
-        });
+        setup();
+        PBQEvents.RELOAD.invoker().reload();
+        started();
+
+        LOGGER.info("Reload complete.");
     }
 
     public static StorageManager storage() {

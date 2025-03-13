@@ -28,8 +28,7 @@
     "java": ">=21",
     "architectury": ">=13.0.2",
     "fabric-api": "*",
-    "luckperms": ">=5.4",
-    "blanketeconomy": ">1.4.5"
+    "luckperms": ">=5.4"
   },
   "suggests": {
     "another-mod": "*"

@@ -1,6 +1,12 @@
-architectury {
-    common rootProject.enabled_platforms.split(',')
+plugins {
+    id 'dev.architectury.loom'
+    id 'architectury-plugin'
 }
+
+architectury {
+    common("neoforge", "fabric")
+}
+
 
 dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
@@ -10,4 +16,6 @@ dependencies {
 
     // Architectury API. This is optional, and you can comment it out if you don't need it.
     modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+
+    modCompileOnly 'com.github.Eufranio:StorageUtils:2.5.2'
 }

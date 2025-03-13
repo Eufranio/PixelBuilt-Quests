@@ -43,10 +43,9 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
     forgeRuntimeLibrary 'net.impactdev.impactor.api:economy:5.2.4-SNAPSHOT'
-    forgeRuntimeLibrary 'com.github.Eufranio:StorageUtils:2.5.2'
+    forgeRuntimeLibrary(implementation(include('com.github.Eufranio:StorageUtils:2.5.2')))
 
     modRuntimeOnly "maven.modrinth:luckperms:v5.4.140-neoforge"
-
 }
 
 processResources {

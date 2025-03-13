@@ -57,7 +57,6 @@ subprojects {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         mappings loom.officialMojangMappings()
         implementation 'net.impactdev.impactor.api:economy:5.2.4-SNAPSHOT'
-        include(implementation('com.github.Eufranio:StorageUtils:2.5.2'))
         compileOnly 'net.luckperms:api:5.4'
     }
 

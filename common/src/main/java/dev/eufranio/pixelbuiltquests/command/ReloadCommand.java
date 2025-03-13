@@ -3,6 +3,7 @@ package dev.eufranio.pixelbuiltquests.command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import dev.eufranio.pixelbuiltquests.PixelBuiltQuests;
 import dev.eufranio.pixelbuiltquests.events.PBQEvents;
 import dev.eufranio.pixelbuiltquests.utils.Util;
 import net.minecraft.ChatFormatting;
@@ -22,7 +23,7 @@ public class ReloadCommand {
         context.getSource().sendSystemMessage(
                 Component.literal("Reloading PixelBuiltQuests...").withStyle(ChatFormatting.GREEN));
 
-        PBQEvents.RELOAD.invoker().reload();
+        PixelBuiltQuests.instance().reload();
 
         context.getSource().sendSystemMessage(
                 Component.literal("Successfully reloaded PixelBuiltQuests.").withStyle(ChatFormatting.GREEN));
