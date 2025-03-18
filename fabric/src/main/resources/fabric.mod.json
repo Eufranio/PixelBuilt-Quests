@@ -29,8 +29,5 @@
     "architectury": ">=13.0.2",
     "fabric-api": "*",
     "luckperms": ">=5.4"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

@@ -35,8 +35,10 @@ dependencies {
     modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
 
     modRuntimeOnly "maven.modrinth:luckperms:v5.4.140-fabric"
-    modCompileOnly "com.github.Eufranio:BlanketEconomy:7adbdc8"
-    implementation(include('com.github.Eufranio:StorageUtils:2.5.2'))
+    modCompileOnly "maven.modrinth:beconomy:1.5"
+
+    shadowBundle(include('com.github.Eufranio:StorageUtils:2.5.2'))
+
     shadowBundle 'com.h2database:h2:2.3.232'
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
